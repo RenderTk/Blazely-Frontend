@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:blazely/models/token.dart';
 import 'package:blazely/providers/logged_in_provider.dart';
 import 'package:blazely/providers/token_provider.dart';
+import 'package:blazely/services/token_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -42,7 +43,7 @@ class GoogleAuthProviderNotifier extends Notifier {
       );
 
       final token = Token.fromJson(response.data!);
-      tokenNotifier.setToken(token);
+      await tokenNotifier.setToken(token);
       return true;
     } catch (e) {
       return false;
@@ -62,7 +63,10 @@ class GoogleAuthProviderNotifier extends Notifier {
     // Set is logged in to false to prompt Google sign in
     isLoggedInNotifier.setIsLoggedIn(false);
 
-    //blacklist refresh token (optional. it doesn't matter if it fails)
+    //since user is logged out, clear token saved on local secure storage
+    await TokenSecureStorage.clearToken();
+
+    //blacklist refresh token (optional. it doesn't matter if it fails. A.K.A fire and forget)
     unawaited(
       tokenNotifier.blacklistToken().catchError((e) {
         return false;

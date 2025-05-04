@@ -1,4 +1,5 @@
 import 'package:blazely/providers/logged_in_provider.dart';
+import 'package:blazely/providers/token_provider.dart';
 import 'package:blazely/screens/home_screen.dart';
 import 'package:blazely/screens/log_in_screen.dart';
 import 'package:flutter/material.dart';
@@ -64,18 +65,34 @@ void main() {
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
+  Future<void> _loadToken(WidgetRef ref) async {
+    final tokenNotifier = ref.read(tokenProviderNotifier.notifier);
+    await tokenNotifier.loadTokenFromLocalSecureStorage();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoggedIn = ref.watch(isLoggedInProvider);
+    return FutureBuilder(
+      future: _loadToken(ref),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const MaterialApp(
+            home: Scaffold(body: Center(child: CircularProgressIndicator())),
+          );
+        }
 
-    return MaterialApp(
-      title: 'Blazely',
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: ThemeMode.system,
-      home: Scaffold(
-        body: isLoggedIn ? const HomeScreen() : const LogInScreen(),
-      ),
+        final isLoggedIn = ref.watch(isLoggedInProvider);
+
+        return MaterialApp(
+          title: 'Blazely',
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: ThemeMode.system,
+          home: Scaffold(
+            body: isLoggedIn ? const HomeScreen() : const LogInScreen(),
+          ),
+        );
+      },
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:blazely/models/token.dart';
 import 'package:blazely/providers/logged_in_provider.dart';
+import 'package:blazely/services/token_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,6 +15,33 @@ class TokenNotifier extends Notifier<Token> {
   @override
   Token build() {
     return Token(accessToken: null, refreshToken: null);
+  }
+
+  Future<bool> loadTokenFromLocalSecureStorage() async {
+    final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
+    final token = await TokenSecureStorage.getToken();
+
+    //if there is no token saved on local secure storage => prompt user to login
+    if (token == null) {
+      isLoggedInNotifier.setIsLoggedIn(false);
+      return false;
+    }
+
+    //if the token saved on local secure storage is expired
+    // try to refresh it, if it fails => prompt user to login
+    if (token.isExpired) {
+      try {
+        await refreshToken();
+      } catch (e) {
+        isLoggedInNotifier.setIsLoggedIn(false);
+        return false;
+      }
+    }
+
+    //if the token saved on local secure storage is still valid
+    state = token;
+    isLoggedInNotifier.setIsLoggedIn(true);
+    return true;
   }
 
   Future<bool> refreshToken() async {
@@ -49,11 +77,15 @@ class TokenNotifier extends Notifier<Token> {
     }
   }
 
-  void setToken(Token token) {
+  Future setToken(Token token) async {
     if (token.accessToken == null || token.refreshToken == null) return;
 
     final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
     isLoggedInNotifier.setIsLoggedIn(true);
+
+    //save a copy on local secure storage
+    await TokenSecureStorage.setToken(token);
+
     state = token;
   }
 
