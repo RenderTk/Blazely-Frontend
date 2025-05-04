@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:blazely/models/token.dart';
-import 'package:blazely/providers/dio_provider.dart';
-import 'package:blazely/providers/google_auth_provider.dart';
+import 'package:blazely/providers/logged_in_provider.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final String verifyTokenUrl = "auth/jwt/verify/";
 final String refreshTokenUrl = "auth/jwt/refresh/";
 final String blacklistTokenUrl = "auth/jwt/blacklist/";
+const baseApiUrl = String.fromEnvironment('BASE_API_URL');
 
 class TokenNotifier extends Notifier<Token> {
   @override
@@ -18,7 +19,18 @@ class TokenNotifier extends Notifier<Token> {
   Future<bool> refreshToken() async {
     if (state.accessToken == null || state.refreshToken == null) return false;
 
-    final dio = ref.read(dioProvider);
+    //raw dio instance to avoid circular dependency
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseApiUrl,
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 5),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
     try {
       final response = await dio.post<Map<String, dynamic>>(
         refreshTokenUrl,
@@ -40,14 +52,25 @@ class TokenNotifier extends Notifier<Token> {
   void setToken(Token token) {
     if (token.accessToken == null || token.refreshToken == null) return;
 
+    final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
+    isLoggedInNotifier.setIsLoggedIn(true);
     state = token;
   }
 
   Future<bool> verifyToken() async {
     if (state.accessToken == null) return false;
 
-    final dio = ref.read(dioProvider);
-
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseApiUrl,
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 5),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
     try {
       final response = await dio.post(
         verifyTokenUrl,
@@ -67,17 +90,25 @@ class TokenNotifier extends Notifier<Token> {
   Future<bool> blacklistToken() async {
     if (state.accessToken == null) return false;
 
-    final dio = ref.read(dioProvider);
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseApiUrl,
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 5),
+        headers: {
+          'Authorization': 'Bearer ${state.accessToken}',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
 
-    final googleAuthNotifier = ref.read(googleAuthProvider.notifier);
     try {
       final response = await dio.post(
         blacklistTokenUrl,
         data: jsonEncode({"refresh": state.refreshToken}),
       );
-
-      if (response.statusCode == 200) {
-        await googleAuthNotifier.googleSignOut();
+      if (response.statusCode == 204) {
         return true;
       } else {
         return false;

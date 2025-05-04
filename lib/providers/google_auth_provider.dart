@@ -1,24 +1,33 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:blazely/models/token.dart';
-import 'package:blazely/providers/dio_provider.dart';
 import 'package:blazely/providers/logged_in_provider.dart';
 import 'package:blazely/providers/token_provider.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 const googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+const baseApiUrl = String.fromEnvironment('BASE_API_URL');
 const apiGoogleTokenVerifyUrl = '/auth/google/validate-token/';
 
 class GoogleAuthProviderNotifier extends Notifier {
   @override
   void build() {}
 
-  Future<bool> googleSignInn() async {
-    final dio = ref.read(dioProvider);
-    final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
+  Future<bool> googleSignIn() async {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseApiUrl,
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 5),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
     final tokenNotifier = ref.read(tokenProviderNotifier.notifier);
-
     try {
       GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
@@ -33,10 +42,7 @@ class GoogleAuthProviderNotifier extends Notifier {
       );
 
       final token = Token.fromJson(response.data!);
-
       tokenNotifier.setToken(token);
-      isLoggedInNotifier.setIsLoggedIn(true);
-
       return true;
     } catch (e) {
       return false;

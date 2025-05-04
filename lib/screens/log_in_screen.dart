@@ -47,7 +47,7 @@ class LogInScreen extends ConsumerWidget {
             SizedBox(height: 60),
             GoogleRippleButton(
               onPressed: () async {
-                bool value = await googleAuthNotifier.googleSignInn();
+                bool value = await googleAuthNotifier.googleSignIn();
                 if (value == false) {
                   if (context.mounted) {
                     SnackbarService.showCustomSnackbar(

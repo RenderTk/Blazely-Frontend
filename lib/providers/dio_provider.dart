@@ -10,12 +10,11 @@ final dioProvider = Provider<Dio>((ref) {
   final tokenNotifier = ref.read(tokenProviderNotifier.notifier);
   final googleAuthNotifier = ref.read(googleAuthProvider.notifier);
 
-  print(baseApiUrl);
   final dio = Dio(
     BaseOptions(
       baseUrl: baseApiUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 5),
+      receiveTimeout: const Duration(seconds: 5),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -26,48 +25,58 @@ final dioProvider = Provider<Dio>((ref) {
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
-        if (tokenProvider.accessToken != null &&
-            tokenProvider.isExpired == false) {
-          //
-          options.headers['Authorization'] =
-              'Bearer ${tokenProvider.accessToken}';
+        //if access token is expired, try to refresh
+        if (tokenProvider.isExpired) {
+          await tokenNotifier.refreshToken();
         }
 
-        //
+        options.headers['Authorization'] =
+            'Bearer ${tokenProvider.accessToken}';
+
         return handler.next(options);
       },
 
-      //
       onError: (DioException error, handler) async {
+        final requestOptions = error.requestOptions;
+
+        // Case 1: Authentication error (401)
         if (error.response?.statusCode == 401) {
           try {
+            // Refresh token
             await tokenNotifier.refreshToken();
 
-            // Update header
-            dio.options.headers['Authorization'] =
-                'Bearer ${tokenProvider.accessToken}';
-
-            // Retry original request
+            // Retry the request with updated token and retry count
             final opts = Options(
-              method: error.requestOptions.method,
-              headers: {'Authorization': 'Bearer ${tokenProvider.accessToken}'},
+              method: requestOptions.method,
+              headers: {
+                'Authorization': 'Bearer ${tokenProvider.accessToken}',
+                ...requestOptions.headers,
+              },
             );
 
-            final cloneReq = await dio.request(
-              error.requestOptions.path,
+            final response = await dio.request(
+              requestOptions.path,
+              data: requestOptions.data,
+              queryParameters: requestOptions.queryParameters,
               options: opts,
-              data: error.requestOptions.data,
-              queryParameters: error.requestOptions.queryParameters,
             );
 
-            return handler.resolve(cloneReq);
+            return handler.resolve(response);
           } catch (e) {
-            //
             await googleAuthNotifier.googleSignOut();
             return handler.reject(error);
           }
         }
+        // Case 2: Connection error (offline server)
+        else if ((error.type == DioExceptionType.connectionTimeout ||
+            error.type == DioExceptionType.receiveTimeout ||
+            error.type == DioExceptionType.connectionError)) {
+          //
+          await googleAuthNotifier.googleSignOut();
+          return handler.reject(error);
+        }
 
+        // For all other errors or when retry limits are reached, continue with the error
         return handler.next(error);
       },
     ),
