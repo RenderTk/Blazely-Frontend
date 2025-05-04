@@ -2,22 +2,18 @@ import 'package:blazely/providers/google_auth_provider.dart';
 import 'package:blazely/providers/token_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
 
-final developmentBaseApiUrl = String.fromEnvironment(
-  'DEVELOPMENT_BASE_API_URL',
-);
-
-final productionBaseApiUrl = String.fromEnvironment('PRODUCTION_BASE_API_URL');
+const baseApiUrl = String.fromEnvironment('BASE_API_URL');
 
 final dioProvider = Provider<Dio>((ref) {
   final tokenProvider = ref.read(tokenProviderNotifier);
   final tokenNotifier = ref.read(tokenProviderNotifier.notifier);
   final googleAuthNotifier = ref.read(googleAuthProvider.notifier);
 
+  print(baseApiUrl);
   final dio = Dio(
     BaseOptions(
-      baseUrl: kDebugMode ? developmentBaseApiUrl : productionBaseApiUrl,
+      baseUrl: baseApiUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       headers: {
