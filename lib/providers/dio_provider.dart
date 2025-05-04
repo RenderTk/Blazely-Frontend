@@ -4,10 +4,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 
-final developmentBaseUrl = 'http://192.168.4.156:8000/';
+final developmentBaseApiUrl = String.fromEnvironment(
+  'DEVELOPMENT_BASE_API_URL',
+);
 
-// TODO: Set production base url
-final productionBaseUrl = 'https://api.prod.com';
+final productionBaseApiUrl = String.fromEnvironment('PRODUCTION_BASE_API_URL');
 
 final dioProvider = Provider<Dio>((ref) {
   final tokenProvider = ref.read(tokenProviderNotifier);
@@ -16,7 +17,7 @@ final dioProvider = Provider<Dio>((ref) {
 
   final dio = Dio(
     BaseOptions(
-      baseUrl: kDebugMode ? developmentBaseUrl : productionBaseUrl,
+      baseUrl: kDebugMode ? developmentBaseApiUrl : productionBaseApiUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       headers: {

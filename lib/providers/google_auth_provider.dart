@@ -7,8 +7,7 @@ import 'package:blazely/providers/token_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-const googleWebClientId =
-    '146630967901-aapesd267asicntrrcqndcd6npnlre4u.apps.googleusercontent.com';
+const googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 const apiGoogleTokenVerifyUrl = '/auth/google/validate-token/';
 
 class GoogleAuthProviderNotifier extends Notifier {
