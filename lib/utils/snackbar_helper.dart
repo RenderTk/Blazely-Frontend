@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 enum SnackbarType { error, warning, success, info }
 
-class SnackbarService {
+class SnackbarHelper {
   static void showCustomSnackbar({
     required BuildContext context,
     required String message,

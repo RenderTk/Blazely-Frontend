@@ -1,18 +1,39 @@
 import 'package:blazely/models/profile.dart';
-import 'package:blazely/providers/dio_provider.dart';
+import 'package:blazely/services/profile_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 
 const apiProfileUrl = '/api/profiles/me/';
 
-final profileProvider = FutureProvider<Profile>((ref) async {
-  final dio = ref.read(dioProvider);
-  try {
-    final response = await dio.get<Map<String, dynamic>>(apiProfileUrl);
-    if (response.statusCode == 200) {
-      return Profile.fromJson(response.data!);
+class ProfileAsyncNotifier extends AsyncNotifier<Profile?> {
+  final logger = Logger();
+  final _profileService = ProfileService();
+
+  @override
+  Future<Profile?> build() async {
+    try {
+      final profile = await _profileService.getLoggedInUserProfile(ref);
+      return profile;
+    } catch (e, stackTrace) {
+      logger.e(
+        "Failed to fetch logged-in user profile",
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return null;
     }
-    throw Exception("An error occurred when fetching profile.");
-  } catch (e) {
-    rethrow;
   }
-});
+
+  Future<void> loadProfile() async {
+    state = const AsyncLoading();
+
+    state = await AsyncValue.guard(
+      () => _profileService.getLoggedInUserProfile(ref),
+    );
+  }
+}
+
+final profileAsyncProvider =
+    AsyncNotifierProvider<ProfileAsyncNotifier, Profile?>(
+      ProfileAsyncNotifier.new,
+    );

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:blazely/models/token.dart';
 import 'package:blazely/providers/logged_in_provider.dart';
-import 'package:blazely/services/token_secure_storage.dart';
+import 'package:blazely/services/token_secure_storage_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,7 +19,7 @@ class TokenNotifier extends Notifier<Token> {
 
   Future<bool> loadTokenFromLocalSecureStorage() async {
     final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
-    final token = await TokenSecureStorage.getToken();
+    final token = await TokenSecureStorageService.getToken();
 
     //if there is no token saved on local secure storage => prompt user to login
     if (token == null) {
@@ -84,7 +84,7 @@ class TokenNotifier extends Notifier<Token> {
     isLoggedInNotifier.setIsLoggedIn(true);
 
     //save a copy on local secure storage
-    await TokenSecureStorage.setToken(token);
+    await TokenSecureStorageService.setToken(token);
 
     state = token;
   }

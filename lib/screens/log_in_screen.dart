@@ -1,5 +1,5 @@
 import 'package:blazely/providers/google_auth_provider.dart';
-import 'package:blazely/services/snackbar_service.dart';
+import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:blazely/widgets/google_ripple_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,7 +50,7 @@ class LogInScreen extends ConsumerWidget {
                 bool value = await googleAuthNotifier.googleSignIn();
                 if (value == false) {
                   if (context.mounted) {
-                    SnackbarService.showCustomSnackbar(
+                    SnackbarHelper.showCustomSnackbar(
                       context: context,
                       message: 'Login Failed, try again later.',
                       type: SnackbarType.error,

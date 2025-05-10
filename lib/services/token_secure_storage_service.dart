@@ -1,7 +1,7 @@
 import 'package:blazely/models/token.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class TokenSecureStorage {
+class TokenSecureStorageService {
   static final _storage = const FlutterSecureStorage();
   static const accessTokenKey = 'access_token';
   static const refreshTokenKey = 'refresh_token';

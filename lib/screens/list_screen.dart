@@ -1,4 +1,5 @@
 import 'package:blazely/models/task_list.dart';
+import 'package:blazely/widgets/task_tile.dart';
 import 'package:flutter/material.dart';
 
 class ListScreen extends StatelessWidget {
@@ -51,24 +52,25 @@ class ListScreen extends StatelessWidget {
           IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (taskList?.tasks?.isEmpty ?? true) ...[
-              defaultImageWhenEmpty,
-              const SizedBox(height: 20),
-              Text(
-                defaultMsgWhenEmpty,
-                style: Theme.of(context).textTheme.headlineSmall,
-                textAlign: TextAlign.center,
+      body:
+          taskList?.tasks?.isEmpty ?? true
+              ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  defaultImageWhenEmpty,
+                  const SizedBox(height: 20),
+                  Text(
+                    defaultMsgWhenEmpty,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              )
+              : ListView.builder(
+                itemCount: taskList?.tasks?.length ?? 0,
+                itemBuilder:
+                    (context, index) => TaskTile(task: taskList!.tasks![index]),
               ),
-            ] else ...[
-              Text(""),
-            ],
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {},

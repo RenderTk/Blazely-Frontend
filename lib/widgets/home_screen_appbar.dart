@@ -7,41 +7,68 @@ class HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(profileProvider).value;
+    final profileAsync = ref.watch(profileAsyncProvider);
 
-    return AppBar(
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 10),
-        child: CircleAvatar(
-          radius: 25,
-          backgroundColor: Colors.white,
-          child: ClipOval(
-            child:
-                profile?.profilePictureUrl != null
-                    ? Image.network(profile!.profilePictureUrl)
-                    : Image.asset("assets/images/no_profile_picture.png"),
+    return profileAsync.when(
+      data:
+          (profile) => AppBar(
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: CircleAvatar(
+                radius: 25,
+                backgroundColor: Colors.white,
+                child: ClipOval(
+                  child:
+                      profile?.profilePictureUrl != null
+                          ? Image.network(profile!.profilePictureUrl)
+                          : Image.asset("assets/images/no_profile_picture.png"),
+                ),
+              ),
+            ),
+            centerTitle: false,
+            title: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${profile?.user?.firstName} ${profile?.user?.lastName}",
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                Text(
+                  "${profile?.user?.email}",
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.start,
+                ),
+              ],
+            ),
+            actions: const [Icon(Icons.search, size: 35)],
+            elevation: 0,
           ),
-        ),
-      ),
-      centerTitle: false,
-      title: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            "${profile?.user?.firstName} ${profile?.user?.lastName}",
-            style: Theme.of(context).textTheme.bodyLarge,
+      loading:
+          () => AppBar(
+            leading: const CircularProgressIndicator(),
+            title: const Text("Loading your profile..."),
+            centerTitle: true,
           ),
-          Text(
-            "${profile?.user?.email}",
-            style: Theme.of(context).textTheme.bodySmall,
-            textAlign: TextAlign.start,
+      error:
+          (error, stackTrace) => AppBar(
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: CircleAvatar(
+                radius: 25,
+                backgroundColor: Colors.white,
+                child: ClipOval(
+                  child: Image.asset("assets/images/no_profile_picture.png"),
+                ),
+              ),
+            ),
+            centerTitle: false,
+            title: Text(
+              "An error ocurred when fetching your profile.",
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
           ),
-        ],
-      ),
-      actions: const [Icon(Icons.search, size: 35)],
-      elevation: 0,
     );
   }
 

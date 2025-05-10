@@ -2,18 +2,18 @@ import 'package:blazely/models/label.dart';
 
 class Task {
   final int? id;
-  String? title;
+  String? text;
   String? note;
   bool? isCompleted;
   bool? isImportant;
   DateTime? dueDate;
   DateTime? reminderDate;
   String priority;
-  final Label label;
+  final Label? label;
 
   Task({
     required this.id,
-    required this.title,
+    required this.text,
     required this.note,
     required this.isCompleted,
     required this.isImportant,
@@ -25,7 +25,7 @@ class Task {
 
   factory Task.fromJson(Map<String, dynamic> json) => Task(
     id: json['id'],
-    title: json['title'],
+    text: json['text'],
     note: json['note'],
     isCompleted: json['is_completed'],
     isImportant: json['is_important'],
@@ -35,18 +35,18 @@ class Task {
             ? DateTime.parse(json['reminder_date'])
             : null,
     priority: json['priority'],
-    label: Label.fromJson(json['label']),
+    label: json['label'] != null ? Label.fromJson(json['label']) : null,
   );
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'title': title,
+    'text': text,
     'note': note,
     'is_completed': isCompleted,
     'is_important': isImportant,
     'due_date': dueDate?.toIso8601String(),
     'reminder_date': reminderDate?.toIso8601String(),
     'priority': priority,
-    'label': label.toJson(),
+    'label': label?.toJson(),
   };
 }
