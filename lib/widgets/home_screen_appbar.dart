@@ -1,21 +1,26 @@
+import 'package:blazely/providers/profile_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
+class HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const HomeScreenAppBar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(profileProvider).value;
+
     return AppBar(
-      leading: Container(
-        margin: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(25),
-        ),
-        width: 20,
-        height: 20,
-        child: Image.network(
-          "https://avatar.iran.liara.run/public/job/police/male",
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: CircleAvatar(
+          radius: 25,
+          backgroundColor: Colors.white,
+          child: ClipOval(
+            child:
+                profile?.profilePictureUrl != null
+                    ? Image.network(profile!.profilePictureUrl)
+                    : Image.asset("assets/images/no_profile_picture.png"),
+          ),
         ),
       ),
       centerTitle: false,
@@ -25,11 +30,11 @@ class HomeScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            "First Name | Second Name",
+            "${profile?.user?.firstName} ${profile?.user?.lastName}",
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           Text(
-            "Exampleemail@gmail.com",
+            "${profile?.user?.email}",
             style: Theme.of(context).textTheme.bodySmall,
             textAlign: TextAlign.start,
           ),

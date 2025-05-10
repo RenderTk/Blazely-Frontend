@@ -70,7 +70,7 @@ class LogInScreen extends ConsumerWidget {
                   ),
                   Icon(Icons.favorite, color: Colors.red),
                   Text(
-                    " by Tropix",
+                    " by Tropix.dev",
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],

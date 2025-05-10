@@ -3,7 +3,7 @@ import 'package:blazely/models/task_list.dart';
 import 'package:blazely/models/user.dart';
 
 class Profile {
-  final int? id;
+  final String? id;
   DateTime? birthDate;
   final User? user;
   final String profilePictureUrl;

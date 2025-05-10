@@ -84,6 +84,7 @@ class MyApp extends ConsumerWidget {
         final isLoggedIn = ref.watch(isLoggedInProvider);
 
         return MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'Blazely',
           theme: lightTheme,
           darkTheme: darkTheme,
