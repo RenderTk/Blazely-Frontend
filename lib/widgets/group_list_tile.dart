@@ -1,8 +1,8 @@
 import 'package:blazely/widgets/task_list_tile.dart';
 import 'package:flutter/material.dart';
 
-class GroupTaskListTile extends StatelessWidget {
-  const GroupTaskListTile({
+class GroupListTile extends StatelessWidget {
+  const GroupListTile({
     super.key,
     required this.title,
     required this.taskLists,

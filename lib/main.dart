@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 const softWhite = Color(0xFFFFFCF7); // Replace with 0xFFFAF5F0 for warmer tone
 
+const scaffoldBackgroundColorLight = softWhite;
 final lightTheme = ThemeData(
   brightness: Brightness.light,
   scaffoldBackgroundColor: softWhite,
@@ -32,9 +33,10 @@ final lightTheme = ThemeData(
   dividerColor: Colors.grey.shade300,
 );
 
+const scaffoldBackgroundColorDark = Color(0xFF1E1E1E);
 final darkTheme = ThemeData(
   brightness: Brightness.dark,
-  scaffoldBackgroundColor: const Color(0xFF1E1E1E),
+  scaffoldBackgroundColor: scaffoldBackgroundColorDark,
   appBarTheme: const AppBarTheme(
     backgroundColor: Color(0xFF1E1E1E),
     foregroundColor: Colors.white,
@@ -75,9 +77,35 @@ class MyApp extends ConsumerWidget {
     return FutureBuilder(
       future: _loadToken(ref),
       builder: (context, snapshot) {
+        final isDarkMode =
+            MediaQuery.of(context).platformBrightness == Brightness.dark;
+
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const MaterialApp(
-            home: Scaffold(body: Center(child: CircularProgressIndicator())),
+          return MaterialApp(
+            home: Scaffold(
+              backgroundColor:
+                  isDarkMode
+                      ? scaffoldBackgroundColorDark
+                      : scaffoldBackgroundColorLight,
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      "assets/images/blazely_logo.png",
+                      height: 300,
+                      width: 300,
+                      fit: BoxFit.cover,
+                    ),
+                    CircularProgressIndicator(
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    SizedBox(height: 20),
+                    Text("Initializing..."),
+                  ],
+                ),
+              ),
+            ),
           );
         }
 

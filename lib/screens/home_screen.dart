@@ -1,9 +1,12 @@
 import 'package:blazely/models/profile.dart';
+import 'package:blazely/models/task_list.dart';
 import 'package:blazely/providers/google_auth_provider.dart';
 import 'package:blazely/providers/profile_provider.dart';
-import 'package:blazely/widgets/group_task_list_tile.dart';
+import 'package:blazely/screens/list_screen.dart';
+import 'package:blazely/widgets/group_list_tile.dart';
 import 'package:blazely/widgets/home_screen_appbar.dart';
-import 'package:blazely/widgets/task_action_button_group.dart';
+import 'package:blazely/widgets/loading_widget.dart';
+import 'package:blazely/widgets/task_list_tile_group.dart';
 import 'package:blazely/widgets/task_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,14 +14,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-  List<GroupTaskListTile> buildGroupTaskListTiles(Profile? profile) {
+  void navigateToListScreen(BuildContext context, TaskList taskList) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ListScreen(
+              title: taskList.name,
+              defaultImageWhenEmpty: Image.asset(
+                "assets/images/empty_tasks_custom_list.png",
+                height: 200,
+                width: 200,
+                fit: BoxFit.cover,
+              ),
+              defaultMsgWhenEmpty: "There are no tasks in this list.",
+              showShareTaskButton: true,
+              taskList: taskList,
+            ),
+      ),
+    );
+  }
+
+  List<GroupListTile> buildGroupTaskListTiles(
+    Profile? profile,
+    BuildContext context,
+  ) {
     if (profile == null) {
       return [];
     }
     //Load user groups
-    List<GroupTaskListTile> groupTaskListTiles = [];
+    List<GroupListTile> groupTaskListTiles = [];
     for (final groupList in profile.groupLists!) {
-      var groupTaskListTile = GroupTaskListTile(
+      var groupTaskListTile = GroupListTile(
         title: groupList.name,
         taskLists:
             groupList.lists
@@ -26,6 +53,9 @@ class HomeScreen extends ConsumerWidget {
                   (taskList) => TaskListTile(
                     title: taskList.name,
                     leadingEmoji: taskList.emoji,
+                    onPressed: () {
+                      navigateToListScreen(context, taskList);
+                    },
                   ),
                 )
                 .toList() ??
@@ -36,7 +66,10 @@ class HomeScreen extends ConsumerWidget {
     return groupTaskListTiles;
   }
 
-  List<TaskListTile> buildTaskListTiles(Profile? profile) {
+  List<TaskListTile> buildTaskListTiles(
+    Profile? profile,
+    BuildContext context,
+  ) {
     if (profile == null) {
       return [];
     }
@@ -46,6 +79,9 @@ class HomeScreen extends ConsumerWidget {
       var taskListTile = TaskListTile(
         title: taskList.name,
         leadingEmoji: taskList.emoji,
+        onPressed: () {
+          navigateToListScreen(context, taskList);
+        },
       );
       taskListTiles.add(taskListTile);
     }
@@ -59,8 +95,14 @@ class HomeScreen extends ConsumerWidget {
       future: ref.read(profileProvider.future),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const MaterialApp(
-            home: Scaffold(body: Center(child: CircularProgressIndicator())),
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: ModernLoadingWidget(
+              loadingText: 'Loading your tasks...',
+              icon: Icons.task_alt, // You can change this to your app's icon
+              primaryColor: Theme.of(context).primaryColor,
+              secondaryColor: Theme.of(context).colorScheme.secondary,
+            ),
           );
         }
 
@@ -73,7 +115,7 @@ class HomeScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(height: 10),
-              TaskActionButtonGroup(),
+              TaskListTileGroup(),
               Divider(thickness: 0.3, color: Colors.grey.shade400),
               Expanded(
                 child: SizedBox(
@@ -85,10 +127,10 @@ class HomeScreen extends ConsumerWidget {
                     child: Column(
                       children: [
                         //Load user groups
-                        ...buildGroupTaskListTiles(profile),
+                        ...buildGroupTaskListTiles(profile, context),
 
                         //Load user task lists
-                        ...buildTaskListTiles(profile),
+                        ...buildTaskListTiles(profile, context),
                       ],
                     ),
                   ),

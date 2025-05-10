@@ -1,22 +1,43 @@
 import 'package:flutter/material.dart';
 
 class TaskListTile extends StatelessWidget {
+  final String title;
+  final String? leadingEmoji;
+  final IconData? icon;
+  final Color? iconColor;
+  final VoidCallback onPressed;
+
   const TaskListTile({
     super.key,
     required this.title,
     required this.leadingEmoji,
+    required this.onPressed,
+    this.icon,
+    this.iconColor,
   });
 
-  final String title;
-  final String leadingEmoji;
+  const TaskListTile.icon({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.iconColor,
+    required this.onPressed,
+    this.leadingEmoji,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(horizontal: 12),
-      // leading: const Icon(Icons.list_alt_outlined, color: Color(0xFF5C6BC0)),
-      leading: Text(leadingEmoji, style: Theme.of(context).textTheme.bodyLarge),
+      leading:
+          leadingEmoji != null
+              ? Text(
+                leadingEmoji!,
+                style: Theme.of(context).textTheme.bodyLarge,
+              )
+              : Icon(icon, color: iconColor, size: 25),
       title: Text(title, style: Theme.of(context).textTheme.bodyMedium),
+      onTap: onPressed,
     );
   }
 }
