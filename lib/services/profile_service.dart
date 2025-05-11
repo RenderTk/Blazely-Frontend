@@ -1,6 +1,5 @@
 import 'package:blazely/models/profile.dart';
-import 'package:blazely/providers/dio_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
 const apiProfileUrl = '/api/profiles/me/';
@@ -8,8 +7,7 @@ const apiProfileUrl = '/api/profiles/me/';
 class ProfileService {
   final logger = Logger();
 
-  Future<Profile?> getLoggedInUserProfile(Ref ref) async {
-    final dio = ref.read(dioProvider);
+  Future<Profile?> getLoggedInUserProfile(Dio dio) async {
     try {
       final response = await dio.get<Map<String, dynamic>>(apiProfileUrl);
       if (response.statusCode == 200) {

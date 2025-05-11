@@ -14,7 +14,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
-
   void navigateToListScreen(BuildContext context, TaskList taskList) {
     Navigator.push(
       context,

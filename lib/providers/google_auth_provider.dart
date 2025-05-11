@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:blazely/models/token.dart';
-import 'package:blazely/providers/logged_in_provider.dart';
 import 'package:blazely/providers/token_provider.dart';
-import 'package:blazely/services/token_secure_storage_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:logger/logger.dart';
 
 const googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 const baseApiUrl = String.fromEnvironment('BASE_API_URL');
 const apiGoogleTokenVerifyUrl = '/auth/google/validate-token/';
 
-class GoogleAuthProviderNotifier extends Notifier {
+class GoogleAuthNotifier extends Notifier {
+  final logger = Logger();
   @override
   void build() {}
 
@@ -28,7 +28,7 @@ class GoogleAuthProviderNotifier extends Notifier {
         },
       ),
     );
-    final tokenNotifier = ref.read(tokenProviderNotifier.notifier);
+    final tokenNotifier = ref.read(tokenAsyncProvider.notifier);
     try {
       GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
@@ -41,6 +41,7 @@ class GoogleAuthProviderNotifier extends Notifier {
         apiGoogleTokenVerifyUrl,
         data: jsonEncode({'id_token': googleAuth.idToken}),
       );
+      logger.i('signing in...${googleUser.email}');
 
       final token = Token.fromJson(response.data!);
       await tokenNotifier.setToken(token);
@@ -51,20 +52,17 @@ class GoogleAuthProviderNotifier extends Notifier {
   }
 
   Future<void> googleSignOut() async {
-    final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
-    final tokenNotifier = ref.read(tokenProviderNotifier.notifier);
+    final tokenNotifier = ref.read(tokenAsyncProvider.notifier);
 
     GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: ['email', 'profile'],
       clientId: googleWebClientId,
     );
-    await googleSignIn.signOut();
+    await googleSignIn.disconnect();
+    logger.i('signing out...');
 
-    // Set is logged in to false to prompt Google sign in
-    isLoggedInNotifier.setIsLoggedIn(false);
-
-    //since user is logged out, clear token saved on local secure storage
-    await TokenSecureStorageService.clearToken();
+    //clear local secure storage and set isLoggedIn to false
+    await tokenNotifier.clearToken();
 
     //blacklist refresh token (optional. it doesn't matter if it fails. A.K.A fire and forget)
     unawaited(
@@ -75,6 +73,6 @@ class GoogleAuthProviderNotifier extends Notifier {
   }
 }
 
-final googleAuthProvider = NotifierProvider<GoogleAuthProviderNotifier, void>(
-  () => GoogleAuthProviderNotifier(),
+final googleAuthProvider = NotifierProvider<GoogleAuthNotifier, void>(
+  () => GoogleAuthNotifier(),
 );

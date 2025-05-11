@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:blazely/models/token.dart';
 import 'package:blazely/providers/logged_in_provider.dart';
 import 'package:blazely/services/token_secure_storage_service.dart';
-import 'package:dio/dio.dart';
+import 'package:blazely/services/token_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final String verifyTokenUrl = "auth/jwt/verify/";
@@ -11,146 +10,71 @@ final String refreshTokenUrl = "auth/jwt/refresh/";
 final String blacklistTokenUrl = "auth/jwt/blacklist/";
 const baseApiUrl = String.fromEnvironment('BASE_API_URL');
 
-class TokenNotifier extends Notifier<Token> {
+class TokenAsyncNotifier extends AsyncNotifier<Token?> {
+  final _tokenService = TokenService();
+
   @override
-  Token build() {
-    return Token(accessToken: null, refreshToken: null);
-  }
+  Future<Token?> build() => loadTokenFromLocalSecureStorage();
 
-  Future<bool> loadTokenFromLocalSecureStorage() async {
+  Future<Token?> loadTokenFromLocalSecureStorage() async {
     final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
-    final token = await TokenSecureStorageService.getToken();
+    final localToken = await TokenSecureStorageService.getToken();
 
-    //if there is no token saved on local secure storage => prompt user to login
-    if (token == null) {
-      isLoggedInNotifier.setIsLoggedIn(false);
-      return false;
-    }
-
-    //if the token saved on local secure storage is expired
-    // try to refresh it, if it fails => prompt user to login
-    if (token.isExpired) {
+    //try to refresh the token
+    if (localToken?.isExpired ?? true) {
       try {
-        await refreshToken();
+        final refreshedToken = await _tokenService.refreshToken(localToken);
+
+        // token was refreshed successfully, so user can be logged in
+        isLoggedInNotifier.setIsLoggedIn(true);
+        return refreshedToken;
       } catch (e) {
+        // token was not refreshed successfully, so user can't be logged in
         isLoggedInNotifier.setIsLoggedIn(false);
-        return false;
+        return null;
       }
     }
-
-    //if the token saved on local secure storage is still valid
-    state = token;
-    isLoggedInNotifier.setIsLoggedIn(true);
-    return true;
+    return localToken;
   }
 
-  Future<bool> refreshToken() async {
-    if (state.accessToken == null || state.refreshToken == null) return false;
-
-    //raw dio instance to avoid circular dependency
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: baseApiUrl,
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 5),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      ),
-    );
-    try {
-      final response = await dio.post<Map<String, dynamic>>(
-        refreshTokenUrl,
-        data: jsonEncode({"refresh": state.refreshToken}),
-      );
-
-      if (response.statusCode == 200) {
-        final token = Token.fromJson(response.data!);
-        state = token;
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
+  Future refreshToken() async {
+    // Early return if no tokens available
+    if (state.value == null) {
+      return null;
     }
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => _tokenService.refreshToken(state.value),
+    );
   }
 
   Future setToken(Token token) async {
     if (token.accessToken == null || token.refreshToken == null) return;
 
     final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
-    isLoggedInNotifier.setIsLoggedIn(true);
-
     //save a copy on local secure storage
     await TokenSecureStorageService.setToken(token);
 
-    state = token;
+    //user is logged in
+    isLoggedInNotifier.setIsLoggedIn(true);
+
+    state = AsyncValue.data(token);
   }
 
-  Future<bool> verifyToken() async {
-    if (state.accessToken == null) return false;
+  Future clearToken() async {
+    final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
+    await TokenSecureStorageService.clearToken();
+    isLoggedInNotifier.setIsLoggedIn(false);
 
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: baseApiUrl,
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 5),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      ),
-    );
-    try {
-      final response = await dio.post(
-        verifyTokenUrl,
-        data: jsonEncode({"token": state.accessToken}),
-      );
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
+    state = AsyncValue.data(null);
   }
 
-  Future<bool> blacklistToken() async {
-    if (state.accessToken == null) return false;
-
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: baseApiUrl,
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 5),
-        headers: {
-          'Authorization': 'Bearer ${state.accessToken}',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      ),
-    );
-
-    try {
-      final response = await dio.post(
-        blacklistTokenUrl,
-        data: jsonEncode({"refresh": state.refreshToken}),
-      );
-      if (response.statusCode == 204) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
+  Future blacklistToken() async {
+    if (state.value == null) return;
+    await _tokenService.blacklistToken(state.value);
   }
 }
 
-final tokenProviderNotifier = NotifierProvider<TokenNotifier, Token>(
-  () => TokenNotifier(),
+final tokenAsyncProvider = AsyncNotifierProvider<TokenAsyncNotifier, Token?>(
+  () => TokenAsyncNotifier(),
 );

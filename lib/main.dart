@@ -67,21 +67,35 @@ void main() {
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
-  Future<void> _loadToken(WidgetRef ref) async {
-    final tokenNotifier = ref.read(tokenProviderNotifier.notifier);
-    await tokenNotifier.loadTokenFromLocalSecureStorage();
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return FutureBuilder(
-      future: _loadToken(ref),
-      builder: (context, snapshot) {
-        final isDarkMode =
-            MediaQuery.of(context).platformBrightness == Brightness.dark;
+    final token = ref.watch(tokenAsyncProvider);
+    final isLoggedIn = ref.watch(isLoggedInProvider);
+    final isDarkMode =
+        MediaQuery.of(context).platformBrightness == Brightness.dark;
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return MaterialApp(
+    return token.when(
+      data: (token) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Blazely',
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: ThemeMode.system,
+          home: Scaffold(body: isLoggedIn ? const HomeScreen() : const LogInScreen()),
+        );
+      },
+      error:
+          (error, stackTrace) => MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Blazely',
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: ThemeMode.system,
+            home: Scaffold(body: const LogInScreen()),
+          ),
+      loading:
+          () => MaterialApp(
             home: Scaffold(
               backgroundColor:
                   isDarkMode
@@ -106,22 +120,7 @@ class MyApp extends ConsumerWidget {
                 ),
               ),
             ),
-          );
-        }
-
-        final isLoggedIn = ref.watch(isLoggedInProvider);
-
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Blazely',
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: ThemeMode.system,
-          home: Scaffold(
-            body: isLoggedIn ? const HomeScreen() : const LogInScreen(),
           ),
-        );
-      },
     );
   }
 }

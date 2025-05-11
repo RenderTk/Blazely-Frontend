@@ -1,16 +1,20 @@
 import 'package:blazely/models/group_list.dart';
+import 'package:blazely/providers/dio_provider.dart';
 import 'package:blazely/services/group_list_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
   final logger = Logger();
   final _groupListService = GroupListService();
+  late Dio dio;
 
   @override
   Future<List<GroupList>> build() async {
     try {
-      final groups = await _groupListService.getLoggedInUserGroups(ref);
+      dio = ref.watch(dioProvider);
+      final groups = await _groupListService.getLoggedInUserGroups(dio);
       return groups;
     } catch (e, stackTrace) {
       logger.e(

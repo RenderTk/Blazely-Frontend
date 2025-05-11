@@ -1,6 +1,5 @@
 import 'package:blazely/models/task_list.dart';
-import 'package:blazely/providers/dio_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
 const userTaskListsUrl = "/api/lists/";
@@ -8,8 +7,7 @@ const userTaskListsUrl = "/api/lists/";
 class TaskListService {
   final logger = Logger();
 
-  Future<List<TaskList>> getLoggedInUserTaskLists(Ref ref) async {
-    final dio = ref.read(dioProvider);
+  Future<List<TaskList>> getLoggedInUserTaskLists(Dio dio) async {
     try {
       final response = await dio.get(userTaskListsUrl);
 

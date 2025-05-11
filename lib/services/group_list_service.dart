@@ -1,6 +1,5 @@
 import 'package:blazely/models/group_list.dart';
-import 'package:blazely/providers/dio_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
 const userGroupsListsUrl = '/api/groups/';
@@ -8,8 +7,7 @@ const userGroupsListsUrl = '/api/groups/';
 class GroupListService {
   final logger = Logger();
 
-  Future<List<GroupList>> getLoggedInUserGroups(Ref ref) async {
-    final dio = ref.read(dioProvider);
+  Future<List<GroupList>> getLoggedInUserGroups(Dio dio) async {
     try {
       final response = await dio.get(userGroupsListsUrl);
 
