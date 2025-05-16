@@ -19,8 +19,8 @@ class HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 backgroundColor: Colors.white,
                 child: ClipOval(
                   child:
-                      profile?.profilePictureUrl != null
-                          ? Image.network(profile!.profilePictureUrl)
+                      profile != null
+                          ? Image.network(profile.profilePictureUrl)
                           : Image.asset("assets/images/no_profile_picture.png"),
                 ),
               ),
@@ -32,11 +32,13 @@ class HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "${profile?.user?.firstName} ${profile?.user?.lastName}",
+                  profile != null
+                      ? "${profile.user?.firstName} ${profile.user?.lastName}"
+                      : "Couldn't load your profile details.",
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 Text(
-                  "${profile?.user?.email}",
+                  profile != null ? "${profile.user?.email}" : "",
                   style: Theme.of(context).textTheme.bodySmall,
                   textAlign: TextAlign.start,
                 ),
@@ -48,7 +50,10 @@ class HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
       loading:
           () => AppBar(
             leading: const CircularProgressIndicator(),
-            title: const Text("Loading your profile..."),
+            title: Text(
+              "Loading your profile details...",
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
             centerTitle: true,
           ),
       error:

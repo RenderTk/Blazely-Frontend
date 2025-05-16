@@ -58,7 +58,7 @@ class GoogleAuthNotifier extends Notifier {
       scopes: ['email', 'profile'],
       clientId: googleWebClientId,
     );
-    await googleSignIn.disconnect();
+    await googleSignIn.signOut();
     logger.i('signing out...');
 
     //clear local secure storage and set isLoggedIn to false

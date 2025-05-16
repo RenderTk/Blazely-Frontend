@@ -23,4 +23,12 @@ class GroupList {
     'name': name,
     'lists': lists?.map((x) => x.toJson()).toList(),
   };
+
+  GroupList copyWith({int? id, String? name, List<TaskList>? lists}) {
+    return GroupList(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      lists: lists ?? this.lists,
+    );
+  }
 }

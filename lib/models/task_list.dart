@@ -29,4 +29,13 @@ class TaskList {
     'emoji': emoji,
     'tasks': tasks?.map((x) => x.toJson()).toList(),
   };
+
+  TaskList copyWith({int? id, String? name, String? emoji, List<Task>? tasks}) {
+    return TaskList(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      emoji: emoji ?? this.emoji,
+      tasks: tasks ?? this.tasks,
+    );
+  }
 }

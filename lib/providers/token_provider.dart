@@ -34,6 +34,9 @@ class TokenAsyncNotifier extends AsyncNotifier<Token?> {
         return null;
       }
     }
+
+    // token was not expired, so user can be logged in
+    isLoggedInNotifier.setIsLoggedIn(true);
     return localToken;
   }
 
@@ -51,22 +54,24 @@ class TokenAsyncNotifier extends AsyncNotifier<Token?> {
   Future setToken(Token token) async {
     if (token.accessToken == null || token.refreshToken == null) return;
 
+    state = AsyncValue.data(token);
     final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
     //save a copy on local secure storage
     await TokenSecureStorageService.setToken(token);
 
     //user is logged in
     isLoggedInNotifier.setIsLoggedIn(true);
-
-    state = AsyncValue.data(token);
   }
 
   Future clearToken() async {
     final isLoggedInNotifier = ref.read(isLoggedInProvider.notifier);
-    await TokenSecureStorageService.clearToken();
     isLoggedInNotifier.setIsLoggedIn(false);
 
+    // Wait a short moment to ensure rebuild occurs and LogInSreen is rendered
+    await Future.delayed(const Duration(milliseconds: 300));
+
     state = AsyncValue.data(null);
+    await TokenSecureStorageService.clearToken();
   }
 
   Future blacklistToken() async {

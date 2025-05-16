@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
 
-class ModernLoadingWidget extends StatefulWidget {
+class BlazelyLoadingWidget extends StatefulWidget {
   final String loadingText;
-  final IconData icon;
   final Color primaryColor;
   final Color secondaryColor;
 
-  const ModernLoadingWidget({
+  const BlazelyLoadingWidget({
     super.key,
     this.loadingText = 'Loading your tasks...',
-    this.icon = Icons.check_circle_outline,
     this.primaryColor = Colors.blue,
     this.secondaryColor = Colors.teal,
   });
 
   @override
-  State<ModernLoadingWidget> createState() => _ModernLoadingWidgetState();
+  State<BlazelyLoadingWidget> createState() => _BlazelyLoadingWidgetState();
 }
 
-class _ModernLoadingWidgetState extends State<ModernLoadingWidget>
+class _BlazelyLoadingWidgetState extends State<BlazelyLoadingWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<Alignment> _alignmentAnimation;
@@ -67,24 +65,13 @@ class _ModernLoadingWidgetState extends State<ModernLoadingWidget>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Shimmer effect with icon
-          ShaderMask(
-            shaderCallback: (Rect bounds) {
-              return LinearGradient(
-                colors: [
-                  widget.primaryColor.withValues(alpha: 0.5),
-                  widget.primaryColor,
-                  widget.secondaryColor,
-                  widget.secondaryColor.withValues(alpha: 0.5),
-                ],
-                stops: const [0.0, 0.3, 0.7, 1.0],
-                begin: const Alignment(-1.0, -0.5),
-                end: const Alignment(1.0, 0.5),
-                tileMode: TileMode.mirror,
-              ).createShader(bounds);
-            },
-            child: Icon(widget.icon, size: 80, color: Colors.white),
+          Image.asset(
+            "assets/images/blazely_logo.png",
+            height: 250,
+            width: 250,
+            fit: BoxFit.cover,
           ),
+
           const SizedBox(height: 32),
 
           // Animated loading bar

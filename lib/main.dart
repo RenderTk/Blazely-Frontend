@@ -7,8 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 const softWhite = Color(0xFFFFFCF7); // Replace with 0xFFFAF5F0 for warmer tone
-
-const scaffoldBackgroundColorLight = softWhite;
 final lightTheme = ThemeData(
   brightness: Brightness.light,
   scaffoldBackgroundColor: softWhite,
@@ -19,7 +17,7 @@ final lightTheme = ThemeData(
   ),
   colorScheme: const ColorScheme.light(
     primary: Colors.black,
-    onPrimary: Colors.white,
+    onPrimary: softWhite,
     secondary: Colors.grey,
     onSecondary: Colors.black,
     surface: softWhite,
@@ -31,23 +29,38 @@ final lightTheme = ThemeData(
   ),
   iconTheme: const IconThemeData(color: Colors.black),
   dividerColor: Colors.grey.shade300,
+  floatingActionButtonTheme: const FloatingActionButtonThemeData(
+    backgroundColor: Color.fromARGB(255, 8, 1, 145),
+    foregroundColor: Colors.white,
+    shape: StadiumBorder(),
+  ),
+  cardTheme: CardTheme(
+    color: Colors.white, // Or a slightly off-white like Color(0xFFF9F9F9)
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(25),
+      side: BorderSide(color: Colors.grey.shade200), // optional subtle border
+    ),
+    elevation: 3, // Add a small shadow to lift the card
+    margin: const EdgeInsets.all(8),
+  ),
 );
 
-const scaffoldBackgroundColorDark = Color(0xFF1E1E1E);
+//const softBlack = Color(0xFF2C2C2C);
+const softBlack = Color.fromARGB(255, 24, 24, 24);
 final darkTheme = ThemeData(
   brightness: Brightness.dark,
-  scaffoldBackgroundColor: scaffoldBackgroundColorDark,
+  scaffoldBackgroundColor: softBlack,
   appBarTheme: const AppBarTheme(
-    backgroundColor: Color(0xFF1E1E1E),
+    backgroundColor: softBlack,
     foregroundColor: Colors.white,
     elevation: 0,
   ),
   colorScheme: const ColorScheme.dark(
     primary: Colors.white,
-    onPrimary: Colors.black,
+    onPrimary: softBlack,
     secondary: Colors.grey,
     onSecondary: Colors.white,
-    surface: Color(0xFF2C2C2C),
+    surface: softBlack,
     onSurface: Colors.white,
   ),
   textTheme: GoogleFonts.fredokaTextTheme().apply(
@@ -56,6 +69,20 @@ final darkTheme = ThemeData(
   ),
   iconTheme: const IconThemeData(color: Colors.white),
   dividerColor: Colors.grey.shade700,
+  floatingActionButtonTheme: const FloatingActionButtonThemeData(
+    backgroundColor: Colors.blueAccent,
+    foregroundColor: Colors.white,
+    shape: StadiumBorder(),
+  ),
+  cardTheme: CardTheme(
+    color: const Color.fromARGB(79, 82, 81, 81),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(25),
+      side: BorderSide(color: Colors.grey.shade800), // subtle border
+    ),
+    elevation: 3, // adds soft shadow
+    margin: const EdgeInsets.all(8),
+  ),
 );
 
 void main() {
@@ -82,7 +109,9 @@ class MyApp extends ConsumerWidget {
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: ThemeMode.system,
-          home: Scaffold(body: isLoggedIn ? const HomeScreen() : const LogInScreen()),
+          home: Scaffold(
+            body: isLoggedIn ? const HomeScreen() : const LogInScreen(),
+          ),
         );
       },
       error:
@@ -97,10 +126,7 @@ class MyApp extends ConsumerWidget {
       loading:
           () => MaterialApp(
             home: Scaffold(
-              backgroundColor:
-                  isDarkMode
-                      ? scaffoldBackgroundColorDark
-                      : scaffoldBackgroundColorLight,
+              backgroundColor: isDarkMode ? softBlack : softWhite,
               body: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

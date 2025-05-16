@@ -33,7 +33,7 @@ class ProfileAsyncNotifier extends AsyncNotifier<Profile?> {
   Future<void> loadProfile() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
-      () => _profileService.getLoggedInUserProfile(dio),
+      () async => await _profileService.getLoggedInUserProfile(dio),
     );
   }
 }

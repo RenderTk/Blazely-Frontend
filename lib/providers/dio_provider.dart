@@ -27,8 +27,8 @@ class DioNotifier extends Notifier<Dio> {
     final dio = Dio(
       BaseOptions(
         baseUrl: baseApiUrl,
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 5),
+        connectTimeout: const Duration(seconds: 4),
+        receiveTimeout: const Duration(seconds: 4),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ class DioNotifier extends Notifier<Dio> {
           }
 
           // For all other errors or when retry limits are reached, continue with the error
-          return handler.next(error);
+          return handler.reject(error);
         },
       ),
     );

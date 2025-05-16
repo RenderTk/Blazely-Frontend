@@ -1,4 +1,7 @@
 import 'package:blazely/models/label.dart';
+import 'package:intl/intl.dart';
+
+enum TaskBoleanProperty { isCompleted, isImportant }
 
 class Task {
   final int? id;
@@ -44,9 +47,48 @@ class Task {
     'note': note,
     'is_completed': isCompleted,
     'is_important': isImportant,
-    'due_date': dueDate?.toIso8601String(),
-    'reminder_date': reminderDate?.toIso8601String(),
+    'due_date':
+        dueDate != null ? DateFormat('yyyy-MM-dd').format(dueDate!) : null,
+    'reminder_date': reminderDate?.toUtc().toIso8601String(),
     'priority': priority,
     'label': label?.toJson(),
   };
+
+  Task copyWith({
+    int? id,
+    String? text,
+    String? note,
+    bool? isCompleted,
+    bool? isImportant,
+    DateTime? dueDate,
+    DateTime? reminderDate,
+    String? priority,
+    Label? label,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      text: text ?? this.text,
+      note: note ?? this.note,
+      isCompleted: isCompleted ?? this.isCompleted,
+      isImportant: isImportant ?? this.isImportant,
+      dueDate: dueDate ?? this.dueDate,
+      reminderDate: reminderDate ?? this.reminderDate,
+      priority: priority ?? this.priority,
+      label: label ?? this.label,
+    );
+  }
+}
+
+extension TaskDateFormat on Task {
+  String? get formattedDueDate => _formatDate(dueDate);
+  String? get formattedReminderDate => _formatDate(reminderDate);
+
+  String? _formatDate(DateTime? date) {
+    if (date == null) return null;
+    final formatter = DateFormat(
+      'EEE, d \'de\' MMM, y',
+      Intl.getCurrentLocale(),
+    );
+    return formatter.format(date);
+  }
 }

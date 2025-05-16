@@ -4,23 +4,27 @@ import 'package:blazely/providers/google_auth_provider.dart';
 import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/screens/list_screen.dart';
-import 'package:blazely/widgets/group_list_tile.dart';
-import 'package:blazely/widgets/home_screen_appbar.dart';
-import 'package:blazely/widgets/loading_widget.dart';
-import 'package:blazely/widgets/task_list_tile_group.dart';
-import 'package:blazely/widgets/task_list_tile.dart';
+import 'package:blazely/utils/snackbar_helper.dart';
+import 'package:blazely/widgets/tiles/group_list_tile.dart';
+import 'package:blazely/widgets/appbars/home_screen_appbar.dart';
+import 'package:blazely/widgets/animations/blazely_loading_widget.dart';
+import 'package:blazely/widgets/tiles/task_list_tile_group.dart';
+import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
-  void navigateToListScreen(BuildContext context, TaskList taskList) {
+  void navigateToListScreen(
+    BuildContext context,
+    TaskList taskList,
+    GroupList? groupList,
+  ) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (context) => ListScreen(
-              title: taskList.name,
               defaultImageWhenEmpty: Image.asset(
                 "assets/images/empty_tasks_custom_list.png",
                 height: 200,
@@ -29,7 +33,8 @@ class HomeScreen extends ConsumerWidget {
               ),
               defaultMsgWhenEmpty: "There are no tasks in this list.",
               showShareTaskButton: true,
-              taskList: taskList,
+              taskListId: taskList.id ?? -1,
+              groupListId: groupList?.id,
             ),
       ),
     );
@@ -54,7 +59,7 @@ class HomeScreen extends ConsumerWidget {
                     title: taskList.name,
                     leadingEmoji: taskList.emoji,
                     onPressed: () {
-                      navigateToListScreen(context, taskList);
+                      navigateToListScreen(context, taskList, groupList);
                     },
                   ),
                 )
@@ -80,7 +85,7 @@ class HomeScreen extends ConsumerWidget {
         title: taskList.name,
         leadingEmoji: taskList.emoji,
         onPressed: () {
-          navigateToListScreen(context, taskList);
+          navigateToListScreen(context, taskList, null);
         },
       );
       taskListTiles.add(taskListTile);
@@ -90,39 +95,45 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final googleAuthNotifier = ref.read(googleAuthProvider.notifier);
+    final googleAuthNotifier = ref.watch(googleAuthProvider.notifier);
     final taskListAsync = ref.watch(taskListAsyncProvider);
     final groupListAsync = ref.watch(groupListAsyncProvider);
+    final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
 
     // Show loading if any are loading
     if (taskListAsync.isLoading || groupListAsync.isLoading) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: ModernLoadingWidget(
-          loadingText: 'Loading your tasks...',
-          icon: Icons.task_alt, // You can change this to your app's icon
+        body: BlazelyLoadingWidget(
+          loadingText: 'Loading...',
           primaryColor: Theme.of(context).primaryColor,
           secondaryColor: Theme.of(context).colorScheme.secondary,
         ),
       );
     }
 
-    // Show error if any have errors
-    if (taskListAsync.hasError || groupListAsync.hasError) {
-      return Center(
-        child: Column(
-          children: [
-            Image.asset(
-              "assets/images/error_ocurred.png",
-              height: 200,
-              width: 200,
-            ),
-            SizedBox(height: 20),
-            Text("Something went wrong. Please try again later."),
-          ],
-        ),
-      );
-    }
+    //if error when loading home screen, show snackbar
+    ref.listen(taskListAsyncProvider, (previous, next) {
+      if (next is AsyncError && isCurrent) {
+        SnackbarHelper.showCustomSnackbar(
+          context: context,
+          message:
+              "Something went wrong loading your lists, please try again later.",
+          type: SnackbarType.error,
+        );
+      }
+    });
+
+    ref.listen(groupListAsyncProvider, (previous, next) {
+      if (next is AsyncError && isCurrent) {
+        SnackbarHelper.showCustomSnackbar(
+          context: context,
+          message:
+              "Something went wrong loading your groups, please try again later.",
+          type: SnackbarType.error,
+        );
+      }
+    });
 
     return Scaffold(
       appBar: HomeScreenAppBar(),

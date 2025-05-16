@@ -1,4 +1,4 @@
-import 'package:blazely/widgets/task_list_tile.dart';
+import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
 
 class GroupListTile extends StatelessWidget {

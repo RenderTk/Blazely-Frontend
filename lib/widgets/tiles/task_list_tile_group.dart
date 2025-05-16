@@ -1,6 +1,9 @@
 import 'package:blazely/screens/list_screen.dart';
-import 'package:blazely/widgets/task_list_tile.dart';
+import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
+
+//TODO: remove n fix when ListScreen have constructor that accepts a TaskList instance instead of just a taskListId
+const int PLACE_HOLDER_ID = -1;
 
 class TaskListTileGroup extends StatelessWidget {
   const TaskListTileGroup({super.key});
@@ -16,7 +19,6 @@ class TaskListTileGroup extends StatelessWidget {
       MaterialPageRoute(
         builder:
             (context) => ListScreen(
-              title: title,
               defaultImageWhenEmpty: Image.asset(
                 imageAssetPath,
                 height: 200,
@@ -25,7 +27,7 @@ class TaskListTileGroup extends StatelessWidget {
               ),
               defaultMsgWhenEmpty: defaultMsgWhenEmpty,
               showShareTaskButton: false,
-              taskList: null,
+              taskListId: PLACE_HOLDER_ID,
             ),
       ),
     );
