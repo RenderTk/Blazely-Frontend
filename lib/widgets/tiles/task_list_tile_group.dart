@@ -53,9 +53,6 @@ class TaskListTileGroup extends StatelessWidget {
     final assignedColorDark = const Color.fromARGB(255, 176, 222, 245);
     final assignedColorLight = Colors.blueGrey;
 
-    final tasksColorDark = Colors.deepPurpleAccent.shade100;
-    final tasksColorLight = Colors.deepPurpleAccent;
-
     final habitsColorDark = Colors.deepOrangeAccent.shade100;
     final habitsColorLight = Colors.deepOrangeAccent;
 
@@ -123,19 +120,6 @@ class TaskListTileGroup extends StatelessWidget {
               "Assigned to Me",
               "assets/images/empty_assigned_list.png",
               "Tasks that are assigned to you will appear here",
-            );
-          },
-        ),
-        TaskListTile.icon(
-          title: "Tasks",
-          icon: Icons.topic_outlined,
-          iconColor: isDarkMode ? tasksColorDark : tasksColorLight,
-          onPressed: () {
-            navigateToListScreen(
-              context,
-              "Tasks",
-              "assets/images/empty_tasks_list.png",
-              "All tasks will appear here",
             );
           },
         ),
