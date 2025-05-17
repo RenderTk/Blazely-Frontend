@@ -67,8 +67,7 @@ class ListScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: ListScreenAppbar(
-        title: taskList?.name ?? 'Not found',
-        leadingEmoji: taskList?.emoji ?? '😣',
+        taskList: taskList,
         showShareTaskButton: showShareTaskButton,
       ),
       body:
@@ -185,34 +184,5 @@ class ListScreen extends ConsumerWidget {
 
       return taskListScreenBody(context, ref, selectedList);
     }
-
-    // if (groupListId != null) {
-    //   return groupListsAsync.when(
-    //     data: (groups) {
-    //       final selectedGroup =
-    //           groups.where((group) => group.id == groupListId).firstOrNull;
-
-    //       final selectedList =
-    //           selectedGroup?.lists
-    //               ?.where((list) => list.id == taskListId)
-    //               .firstOrNull;
-
-    //       return taskListScreenBody(context, ref, selectedList);
-    //     },
-    //     loading: () => const CircularProgressIndicator(),
-    //     error: (e, st) => const SizedBox(),
-    //   );
-    // } else {
-    //   return taskListsAsync.when(
-    //     data: (lists) {
-    //       final selectedList =
-    //           lists.where((list) => list.id == taskListId).firstOrNull;
-
-    //       return taskListScreenBody(context, ref, selectedList);
-    //     },
-    //     loading: () => const CircularProgressIndicator(),
-    //     error: (e, st) => const SizedBox(),
-    //   );
-    // }
   }
 }

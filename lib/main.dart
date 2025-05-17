@@ -30,9 +30,17 @@ final lightTheme = ThemeData(
   iconTheme: const IconThemeData(color: Colors.black),
   dividerColor: Colors.grey.shade300,
   floatingActionButtonTheme: const FloatingActionButtonThemeData(
-    backgroundColor: Color.fromARGB(255, 8, 1, 145),
+    backgroundColor: Color.fromARGB(255, 28, 210, 216),
     foregroundColor: Colors.white,
     shape: StadiumBorder(),
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      elevation: 0,
+      backgroundColor: Color.fromARGB(255, 28, 210, 216),
+      foregroundColor: Colors.white,
+      shape: StadiumBorder(),
+    ),
   ),
   cardTheme: CardTheme(
     color: Colors.white, // Or a slightly off-white like Color(0xFFF9F9F9)
@@ -73,6 +81,14 @@ final darkTheme = ThemeData(
     backgroundColor: Colors.blueAccent,
     foregroundColor: Colors.white,
     shape: StadiumBorder(),
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      elevation: 0,
+      backgroundColor: Colors.blueAccent,
+      foregroundColor: Colors.white,
+      shape: StadiumBorder(),
+    ),
   ),
   cardTheme: CardTheme(
     color: const Color.fromARGB(79, 82, 81, 81),

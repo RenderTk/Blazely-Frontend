@@ -1,10 +1,10 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task_list.dart';
-import 'package:blazely/providers/google_auth_provider.dart';
 import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
+import 'package:blazely/widgets/forms/manage_list_dialog.dart';
 import 'package:blazely/widgets/tiles/group_list_tile.dart';
 import 'package:blazely/widgets/appbars/home_screen_appbar.dart';
 import 'package:blazely/widgets/animations/blazely_loading_widget.dart';
@@ -95,7 +95,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final googleAuthNotifier = ref.watch(googleAuthProvider.notifier);
     final taskListAsync = ref.watch(taskListAsyncProvider);
     final groupListAsync = ref.watch(groupListAsyncProvider);
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
@@ -174,7 +173,21 @@ class HomeScreen extends ConsumerWidget {
           children: [
             TextButton.icon(
               onPressed: () {
-                googleAuthNotifier.googleSignOut();
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => Dialog(
+                        insetPadding: const EdgeInsets.all(20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        child: ManageListForm(
+                          type: ManageListDialogType.create,
+                          taskList: null,
+                        ),
+                      ),
+                );
               },
               icon: const Icon(Icons.add),
               label: const Text("New list"),

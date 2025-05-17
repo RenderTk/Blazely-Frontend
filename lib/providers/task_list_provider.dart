@@ -36,6 +36,62 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
     }
   }
 
+  Future<void> deleteTaskList(TaskList taskList) async {
+    var taskListState = [...state.value!];
+    if (taskListState.isEmpty) return;
+
+    if (taskList.id == null || taskList.id! <= 0) return;
+
+    state = await AsyncValue.guard(() async {
+      // Update state on server
+      await _taskListService.deleteTaskList(dio, taskList);
+
+      // Update state locally
+      taskListState.removeWhere((tl) => tl.id == taskList.id);
+
+      return taskListState;
+    });
+  }
+
+  Future<void> updateTaskList(TaskList taskList) async {
+    var taskListState = [...state.value!];
+
+    if (taskListState.isEmpty) return;
+
+    if (taskList.id == null || taskList.id! <= 0) return;
+
+    state = await AsyncValue.guard(() async {
+      // Update state on server
+      await _taskListService.updateTaskList(dio, taskList);
+
+      // Update state locally
+      taskListState[taskListState.indexWhere((tl) => tl.id == taskList.id)] =
+          taskList;
+
+      return taskListState;
+    });
+  }
+
+  Future<TaskList?> addTaskList(String name, String emoji) async {
+    var taskListState = [...state.value!];
+    if (taskListState.isEmpty) return null;
+
+    if (name.isEmpty || emoji.isEmpty) return null;
+
+    TaskList? createdTaskList;
+    state = await AsyncValue.guard(() async {
+      createdTaskList = await _taskListService.createList(dio, name, emoji);
+
+      if (createdTaskList == null) {
+        throw Exception("Failed to create task list.");
+      }
+      taskListState.add(createdTaskList!);
+      return taskListState;
+    });
+
+    return createdTaskList;
+  }
+
   Future<void> toggleIsImportantOnTask(
     int taskListId,
     int taskId,

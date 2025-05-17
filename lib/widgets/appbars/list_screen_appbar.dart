@@ -1,30 +1,51 @@
+import 'package:blazely/models/task_list.dart';
+import 'package:blazely/widgets/forms/manage_list_dialog.dart';
 import 'package:flutter/material.dart';
+
+enum PopMenuValues { changeName, sendCopy, duplicate, print, delete }
 
 class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
   const ListScreenAppbar({
     super.key,
-    required this.title,
-    this.leadingEmoji,
+    required this.taskList,
     this.showShareTaskButton = false,
   });
 
-  final String title;
-  final String? leadingEmoji;
+  final TaskList? taskList;
   final bool showShareTaskButton;
 
   @override
   Widget build(BuildContext context) {
+    void showManageListDialog(BuildContext context, ManageListDialogType type) {
+      showDialog(
+        context: context,
+        builder:
+            (context) => Dialog(
+              insetPadding: const EdgeInsets.all(20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              child: ManageListForm(type: type, taskList: taskList),
+            ),
+      );
+    }
+
     return AppBar(
+      elevation: 0,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       title: Row(
         children: [
-          if (leadingEmoji != null) ...[
-            Text(leadingEmoji!, style: Theme.of(context).textTheme.titleLarge),
+          if (taskList?.emoji != null) ...[
+            Text(
+              taskList?.emoji ?? '😣',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(width: 10),
           ],
           Flexible(
             child: Text(
-              title,
+              taskList?.name ?? "Couldn't load task list",
               style: Theme.of(context).textTheme.titleLarge,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
@@ -38,7 +59,62 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
             icon: const Icon(Icons.person_add_alt_outlined),
             onPressed: () {},
           ),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
+        PopupMenuButton(
+          onSelected: (value) {
+            if (value == PopMenuValues.changeName.toString()) {
+              showManageListDialog(context, ManageListDialogType.update);
+            } else if (value == PopMenuValues.sendCopy.toString()) {
+            } else if (value == PopMenuValues.duplicate.toString()) {
+            } else if (value == PopMenuValues.print.toString()) {
+            } else if (value == PopMenuValues.delete.toString()) {
+              showManageListDialog(context, ManageListDialogType.delete);
+            }
+          },
+
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(25)),
+          ),
+          position: PopupMenuPosition.under,
+          itemBuilder: (context) {
+            return <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: PopMenuValues.changeName.toString(),
+                child: ListTile(
+                  leading: Icon(Icons.edit_outlined),
+                  title: Text('Change list name'),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: PopMenuValues.sendCopy.toString(),
+                child: ListTile(
+                  leading: Icon(Icons.share_outlined),
+                  title: Text('Share copy'),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: PopMenuValues.duplicate.toString(),
+                child: ListTile(
+                  leading: Icon(Icons.copy_outlined),
+                  title: Text('Duplicate list'),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: PopMenuValues.print.toString(),
+                child: ListTile(
+                  leading: Icon(Icons.print_outlined),
+                  title: Text('Print list'),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: PopMenuValues.delete.toString(),
+                child: ListTile(
+                  leading: Icon(Icons.delete_outlined),
+                  title: Text('Delete list'),
+                ),
+              ),
+            ];
+          },
+        ),
       ],
     );
   }

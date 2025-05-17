@@ -2,14 +2,16 @@ import 'package:blazely/models/task_list.dart';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
-const userTaskListsUrl = "/api/lists/";
+const usersTaskListsUrl = "/api/lists/";
+const createTaskListUrl = "/api/lists/";
+String updateAndDeleteUrl = "api/lists/<listId>/";
 
 class TaskListService {
   final logger = Logger();
 
   Future<List<TaskList>> getLoggedInUserTaskLists(Dio dio) async {
     try {
-      final response = await dio.get(userTaskListsUrl);
+      final response = await dio.get(usersTaskListsUrl);
 
       if (response.statusCode == 200) {
         final data = response.data as List<dynamic>;
@@ -25,6 +27,60 @@ class TaskListService {
         error: e,
         stackTrace: stackTrace,
       );
+      rethrow;
+    }
+  }
+
+  Future<TaskList> createList(Dio dio, String name, String emoji) async {
+    try {
+      final response = await dio.post(
+        createTaskListUrl,
+        data: {"name": name, "emoji": emoji},
+      );
+      final createdTask = TaskList.fromJson(response.data);
+      return createdTask;
+    } catch (e, stackTrace) {
+      logger.e("Failed to create task list", error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  Future updateTaskList(Dio dio, TaskList taskList) async {
+    if (taskList.id == null) return;
+    try {
+      final response = await dio.put(
+        updateAndDeleteUrl.replaceAll("<listId>", "${taskList.id}"),
+        data: taskList.toJson(),
+        options: Options(
+          headers: {
+            ...dio.options.headers, // preserve default headers
+          },
+          sendTimeout: const Duration(seconds: 2),
+          receiveTimeout: const Duration(seconds: 2),
+        ),
+      );
+      if (response.statusCode != 200) {
+        throw Exception("An error occurred when updating task list");
+      }
+    } catch (e, stackTrace) {
+      logger.e("Failed to update task list", error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  Future deleteTaskList(Dio dio, TaskList taskList) async {
+    if (taskList.id == null) return;
+    try {
+      final response = await dio.delete(
+        updateAndDeleteUrl.replaceAll("<listId>", "${taskList.id}"),
+      );
+
+      //server retrurns 204 when successfully deleted
+      if (response.statusCode != 204) {
+        throw Exception("An error occurred when deleting task list");
+      }
+    } catch (e, stackTrace) {
+      logger.e("Failed to delete task list", error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
