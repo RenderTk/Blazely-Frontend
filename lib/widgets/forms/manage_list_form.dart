@@ -306,9 +306,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
               SizedBox(height: 20),
               ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 300),
-                child: Expanded(
-                  child: EmojiPicker(emojiController: emojiController),
-                ),
+                child: EmojiPicker(emojiController: emojiController),
               ),
             ],
 
