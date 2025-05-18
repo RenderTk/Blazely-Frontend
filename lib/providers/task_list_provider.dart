@@ -74,7 +74,6 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
 
   Future<TaskList?> addTaskList(String name, String emoji) async {
     var taskListState = [...state.value!];
-    if (taskListState.isEmpty) return null;
 
     if (name.isEmpty || emoji.isEmpty) return null;
 

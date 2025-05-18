@@ -4,7 +4,8 @@ import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
-import 'package:blazely/widgets/forms/manage_list_dialog.dart';
+import 'package:blazely/widgets/forms/manage_group_from.dart';
+import 'package:blazely/widgets/forms/manage_list_form.dart';
 import 'package:blazely/widgets/tiles/group_list_tile.dart';
 import 'package:blazely/widgets/appbars/home_screen_appbar.dart';
 import 'package:blazely/widgets/animations/blazely_loading_widget.dart';
@@ -52,7 +53,8 @@ class HomeScreen extends ConsumerWidget {
     for (final groupList in groupLists) {
       var groupTaskListTile = GroupListTile(
         title: groupList.name,
-        taskLists:
+        group: groupList,
+        taskListsTiles:
             groupList.lists
                 ?.map(
                   (taskList) => TaskListTile(
@@ -183,20 +185,46 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         backgroundColor: Theme.of(context).colorScheme.surface,
                         child: ManageListForm(
-                          type: ManageListDialogType.create,
+                          type: ManageListFormType.create,
                           taskList: null,
                         ),
                       ),
                 );
               },
               icon: const Icon(Icons.add),
-              label: const Text("New list"),
+              label: Text(
+                "New list",
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
             ),
             Spacer(),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => Dialog(
+                        insetPadding: const EdgeInsets.all(20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        child: ManageGroupFrom(
+                          type: ManagGroupFormType.create,
+                          groupList: null,
+                        ),
+                      ),
+                );
+              },
               icon: const Icon(Icons.add),
-              label: const Text("New group"),
+              label: Text(
+                "New group",
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),

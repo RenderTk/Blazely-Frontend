@@ -20,10 +20,10 @@ class TaskListService {
             .toList();
       }
 
-      throw Exception("An error occurred when fetching your task lists.");
+      throw Exception("An error occurred when fetching your lists.");
     } catch (e, stackTrace) {
       logger.e(
-        "Failed to fetch logged-in user task lists",
+        "Failed to fetch logged-in user lists",
         error: e,
         stackTrace: stackTrace,
       );
@@ -33,6 +33,9 @@ class TaskListService {
 
   Future<TaskList> createList(Dio dio, String name, String emoji) async {
     try {
+      if (name.isEmpty || emoji.isEmpty) {
+        throw Exception("Name and emoji cannot be empty.");
+      }
       final response = await dio.post(
         createTaskListUrl,
         data: {"name": name, "emoji": emoji},
@@ -40,7 +43,7 @@ class TaskListService {
       final createdTask = TaskList.fromJson(response.data);
       return createdTask;
     } catch (e, stackTrace) {
-      logger.e("Failed to create task list", error: e, stackTrace: stackTrace);
+      logger.e("Failed to create the list.", error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -51,19 +54,12 @@ class TaskListService {
       final response = await dio.put(
         updateAndDeleteUrl.replaceAll("<listId>", "${taskList.id}"),
         data: taskList.toJson(),
-        options: Options(
-          headers: {
-            ...dio.options.headers, // preserve default headers
-          },
-          sendTimeout: const Duration(seconds: 2),
-          receiveTimeout: const Duration(seconds: 2),
-        ),
       );
       if (response.statusCode != 200) {
-        throw Exception("An error occurred when updating task list");
+        throw Exception("An error occurred when updating the list.");
       }
     } catch (e, stackTrace) {
-      logger.e("Failed to update task list", error: e, stackTrace: stackTrace);
+      logger.e("Failed to update the list.", error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -77,10 +73,10 @@ class TaskListService {
 
       //server retrurns 204 when successfully deleted
       if (response.statusCode != 204) {
-        throw Exception("An error occurred when deleting task list");
+        throw Exception("An error occurred when deleting the list.");
       }
     } catch (e, stackTrace) {
-      logger.e("Failed to delete task list", error: e, stackTrace: stackTrace);
+      logger.e("Failed to delete the list.", error: e, stackTrace: stackTrace);
       rethrow;
     }
   }

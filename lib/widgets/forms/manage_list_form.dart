@@ -6,12 +6,12 @@ import 'package:blazely/widgets/pickers/emoji_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum ManageListDialogType { create, update, delete }
+enum ManageListFormType { create, update, delete }
 
 class ManageListForm extends ConsumerStatefulWidget {
   const ManageListForm({super.key, required this.type, required this.taskList});
 
-  final ManageListDialogType type;
+  final ManageListFormType type;
   final TaskList? taskList;
 
   @override
@@ -23,15 +23,15 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
   TextEditingController textController = TextEditingController();
   TextEditingController emojiController = TextEditingController();
   final errorMsgMap = {
-    ManageListDialogType.create: "creating",
-    ManageListDialogType.update: "updating",
-    ManageListDialogType.delete: "deleting",
+    ManageListFormType.create: "creating",
+    ManageListFormType.update: "updating",
+    ManageListFormType.delete: "deleting",
   };
 
   @override
   void initState() {
     super.initState();
-    if (widget.type == ManageListDialogType.update) {
+    if (widget.type == ManageListFormType.update) {
       emojiController.text = widget.taskList!.emoji;
       textController.text = widget.taskList!.name;
     }
@@ -108,22 +108,22 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
 
   String _resolveTitleText() {
     switch (widget.type) {
-      case ManageListDialogType.create:
+      case ManageListFormType.create:
         return "New List";
-      case ManageListDialogType.update:
+      case ManageListFormType.update:
         return "Update List";
-      case ManageListDialogType.delete:
+      case ManageListFormType.delete:
         return "Delete ${widget.taskList?.name} ?";
     }
   }
 
   String _resolveActionButtonText() {
     switch (widget.type) {
-      case ManageListDialogType.create:
+      case ManageListFormType.create:
         return "Create";
-      case ManageListDialogType.update:
+      case ManageListFormType.update:
         return 'Update';
-      case ManageListDialogType.delete:
+      case ManageListFormType.delete:
         return "Delete";
     }
   }
@@ -134,33 +134,56 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
   ) async {
     if (textController.text.isNotEmpty &&
         emojiController.text.isNotEmpty &&
-        widget.type == ManageListDialogType.create &&
+        widget.type == ManageListFormType.create &&
         context.mounted) {
       await _createList(context, taskListAsyncNotifier);
       //
     } else if (textController.text.isNotEmpty &&
         emojiController.text.isNotEmpty &&
-        widget.type == ManageListDialogType.update &&
+        widget.type == ManageListFormType.update &&
         context.mounted) {
       await _updateList(context, taskListAsyncNotifier);
       //
-    } else if (widget.type == ManageListDialogType.delete && context.mounted) {
+    } else if (widget.type == ManageListFormType.delete && context.mounted) {
       await _deleteList(context, taskListAsyncNotifier);
+    }
+  }
+
+  Color _resolveActionBackgroundButtonColor(
+    bool isDarkMode,
+    List<TaskList> taskLists,
+  ) {
+    if (widget.type == ManageListFormType.create) {
+      if (!_isDataValid(taskLists)) {
+        return isDarkMode ? Colors.grey.shade500 : Colors.grey.shade700;
+      }
+
+      // Green for create
+      return isDarkMode
+          ? const Color(0xFF66BB6A) // Softer green for dark theme
+          : const Color(0xFF4CAF50); // Normal green for light theme
+    } else {
+      // Red for delete or other actions
+      return isDarkMode
+          ? const Color(0xFFF44336) // Normal red for light theme
+          : const Color(0xFFEF5350); // Softer red for dark theme
     }
   }
 
   bool _isDataValid(List<TaskList> taskLists) {
     final isTaskListNameUnique =
         !taskLists.any(
-          (taskList) => taskList.name.trim() == textController.text.trim(),
+          (taskList) =>
+              taskList.name.trim().toLowerCase() ==
+              textController.text.trim().toLowerCase(),
         );
 
     return (textController.text.isNotEmpty &&
             emojiController.text.isNotEmpty &&
             (isTaskListNameUnique ||
-                (widget.type == ManageListDialogType.update &&
+                (widget.type == ManageListFormType.update &&
                     textController.text == widget.taskList!.name)) ||
-        widget.type == ManageListDialogType.delete);
+        widget.type == ManageListFormType.delete);
   }
 
   @override
@@ -168,6 +191,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
     final taskListAsyncNotifier = ref.watch(taskListAsyncProvider.notifier);
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
     final taskLists = ref.read(taskListAsyncProvider).value;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     ref.listen(taskListAsyncProvider, (previous, next) {
       Navigator.pop(context);
@@ -190,22 +214,21 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Text(
-                  _resolveTitleText(),
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-
-            // widget to show when creating a new list or updating an existing one
-            if (widget.type != ManageListDialogType.delete) ...[
+            if (widget.type != ManageListFormType.delete) ...[
+              Row(
+                children: [
+                  // widget to show when creating a new list or updating an existing one
+                  Text(
+                    _resolveTitleText(),
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
               SizedBox(height: 20),
               Row(
                 children: [
@@ -242,13 +265,14 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                           return 'Please enter a list name';
                         }
 
-                        final trimmedValue = value.trim();
+                        final trimmedValue = value.trim().toLowerCase();
 
                         // Check if name exists in any other list (excluding current list when updating)
                         final nameExists =
                             taskLists?.any(
                               (taskList) =>
-                                  taskList.name == trimmedValue &&
+                                  taskList.name.trim().toLowerCase() ==
+                                      trimmedValue.toLowerCase() &&
                                   taskList.id != widget.taskList?.id,
                             ) ??
                             false;
@@ -265,6 +289,18 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
               ),
             ],
 
+            // widget to show when deleting a list
+            if (widget.type == ManageListFormType.delete) ...[
+              Text(
+                "Are you sure?",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              SizedBox(height: 5),
+              Text(
+                "\"${widget.taskList?.name}\" will be deleted permanently.",
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
             // show emoji picker when showEmojiPicker is true
             if (_showEmojiPicker) ...[
               SizedBox(height: 20),
@@ -294,15 +330,18 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                   Expanded(
                     child: ElevatedButton(
                       style:
-                          widget.type == ManageListDialogType.delete
-                              ? Theme.of(
+                          widget.type == ManageListFormType.update
+                              ? Theme.of(context).elevatedButtonTheme.style
+                              : Theme.of(
                                 context,
-                              ).elevatedButtonTheme.style!.copyWith(
-                                backgroundColor: WidgetStateProperty.all(
-                                  Theme.of(context).colorScheme.error,
+                              ).elevatedButtonTheme.style?.copyWith(
+                                backgroundColor: WidgetStatePropertyAll(
+                                  _resolveActionBackgroundButtonColor(
+                                    isDarkMode,
+                                    taskLists ?? [],
+                                  ),
                                 ),
-                              )
-                              : Theme.of(context).elevatedButtonTheme.style,
+                              ),
                       onPressed:
                           _isDataValid(taskLists ?? [])
                               ? () async {
@@ -314,11 +353,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                               : null,
                       child: Text(
                         _resolveActionButtonText(),
-                        style:
-                            widget.type == ManageListDialogType.delete
-                                ? Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(color: Colors.white)
-                                : Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
                   ),

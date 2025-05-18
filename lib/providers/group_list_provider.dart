@@ -41,6 +41,59 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
     }
   }
 
+  Future<void> deleteGroupList(GroupList groupList) async {
+    var groupListState = [...state.value!];
+    if (groupListState.isEmpty) return;
+
+    if (groupList.id == null || groupList.id! <= 0) return;
+
+    state = await AsyncValue.guard(() async {
+      // Update state on server
+      await _groupListService.deleteGroup(dio, groupList);
+
+      // Update state locally
+      groupListState.removeWhere((gl) => gl.id == groupList.id);
+      return groupListState;
+    });
+  }
+
+  Future<void> updateGroupList(GroupList groupList) async {
+    var groupListState = [...state.value!];
+
+    if (groupListState.isEmpty) return;
+
+    if (groupList.id == null || groupList.id! <= 0) return;
+
+    state = await AsyncValue.guard(() async {
+      // Update state on server
+      await _groupListService.updateGroup(dio, groupList);
+
+      // Update state locally
+      groupListState[groupListState.indexWhere((gl) => gl.id == groupList.id)] =
+          groupList;
+      return groupListState;
+    });
+  }
+
+  Future<GroupList?> addGroupList(String name) async {
+    var groupListState = [...state.value!];
+
+    if (name.isEmpty) return null;
+
+    GroupList? createdGroupList;
+    state = await AsyncValue.guard(() async {
+      createdGroupList = await _groupListService.createGroup(dio, name);
+
+      if (createdGroupList == null) {
+        throw Exception("Failed to create group list.");
+      }
+      groupListState.add(createdGroupList!);
+      return groupListState;
+    });
+
+    return createdGroupList;
+  }
+
   Future<void> toggleIsCompletedOnTask(
     int groupId,
     int taskListId,

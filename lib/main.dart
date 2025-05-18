@@ -24,8 +24,8 @@ final lightTheme = ThemeData(
     onSurface: Colors.black,
   ),
   textTheme: GoogleFonts.fredokaTextTheme().apply(
-    bodyColor: Colors.black,
-    displayColor: Colors.black,
+    bodyColor: Color(0xFF212121), // softer than black
+    displayColor: Color(0xFF212121),
   ),
   iconTheme: const IconThemeData(color: Colors.black),
   dividerColor: Colors.grey.shade300,

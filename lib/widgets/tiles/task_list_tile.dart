@@ -36,7 +36,12 @@ class TaskListTile extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyLarge,
               )
               : Icon(icon, color: iconColor, size: 25),
-      title: Text(title, style: Theme.of(context).textTheme.bodyMedium),
+      title: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+      ),
       onTap: onPressed,
     );
   }

@@ -1,5 +1,5 @@
 import 'package:blazely/models/task_list.dart';
-import 'package:blazely/widgets/forms/manage_list_dialog.dart';
+import 'package:blazely/widgets/forms/manage_list_form.dart';
 import 'package:flutter/material.dart';
 
 enum PopMenuValues { changeName, sendCopy, duplicate, print, delete }
@@ -16,7 +16,7 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    void showManageListDialog(BuildContext context, ManageListDialogType type) {
+    void showManageListDialog(BuildContext context, ManageListFormType type) {
       showDialog(
         context: context,
         builder:
@@ -62,12 +62,15 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
         PopupMenuButton(
           onSelected: (value) {
             if (value == PopMenuValues.changeName.toString()) {
-              showManageListDialog(context, ManageListDialogType.update);
+              showManageListDialog(context, ManageListFormType.update);
             } else if (value == PopMenuValues.sendCopy.toString()) {
+              //TODO: Share copy of list
             } else if (value == PopMenuValues.duplicate.toString()) {
+              //TODO: Duplicate list
             } else if (value == PopMenuValues.print.toString()) {
+              //TODO: Print list
             } else if (value == PopMenuValues.delete.toString()) {
-              showManageListDialog(context, ManageListDialogType.delete);
+              showManageListDialog(context, ManageListFormType.delete);
             }
           },
 
