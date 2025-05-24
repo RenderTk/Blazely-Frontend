@@ -1,5 +1,6 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/providers/group_list_provider.dart';
+import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,6 +22,11 @@ class ManageGroupFrom extends ConsumerStatefulWidget {
 
 class _ManageGroupFromState extends ConsumerState<ManageGroupFrom> {
   final textController = TextEditingController();
+  final errorMsgMap = {
+    ManagGroupFormType.create: "creating",
+    ManagGroupFormType.update: "updating",
+    ManagGroupFormType.delete: "deleting",
+  };
 
   @override
   void initState() {
@@ -81,11 +87,37 @@ class _ManageGroupFromState extends ConsumerState<ManageGroupFrom> {
               textController.text.trim().toLowerCase(),
         );
 
-    return (textController.text.isNotEmpty &&
-            (isGroupListNameUnique ||
-                (widget.type == ManagGroupFormType.update &&
-                    textController.text == widget.groupList!.name)) ||
-        widget.type == ManagGroupFormType.delete);
+    bool isTextNotEmpty = textController.text.isNotEmpty;
+    bool isNameValid = isGroupListNameUnique;
+    bool isDeleteOperation = widget.type == ManagGroupFormType.delete;
+
+    return isTextNotEmpty && isNameValid || isDeleteOperation;
+  }
+
+  String? _validateInput(List<GroupList>? groupsLists, String? value) {
+    bool isDeleteOperation = widget.type == ManagGroupFormType.delete;
+    // Skip validation for delete operation
+    if (isDeleteOperation) {
+      return null;
+    }
+
+    // Check for empty value
+    if (value?.trim().isEmpty ?? true) {
+      return 'Please enter a list name';
+    }
+
+    final trimmedValue = value?.trim().toLowerCase();
+    // Check if name exists in any other list (excluding current list when updating)
+    final nameExists =
+        groupsLists?.any(
+          (grouplist) => grouplist.name.trim().toLowerCase() == trimmedValue,
+        ) ??
+        false;
+    if (nameExists) {
+      return 'group name already exists';
+    }
+
+    return null;
   }
 
   String _resolveTitleText() {
@@ -155,6 +187,18 @@ class _ManageGroupFromState extends ConsumerState<ManageGroupFrom> {
     final groupsLists = ref.watch(groupListAsyncProvider).value;
     final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
+
+    ref.listen(groupListAsyncProvider, (previous, next) {
+      if (next is AsyncError && isCurrent) {
+        SnackbarHelper.showCustomSnackbar(
+          context: context,
+          message:
+              "Something went wrong ${errorMsgMap[widget.type]} the group. Please try again later.",
+          type: SnackbarType.error,
+        );
+      }
+    });
 
     return Card(
       margin: EdgeInsets.zero,
@@ -179,30 +223,7 @@ class _ManageGroupFromState extends ConsumerState<ManageGroupFrom> {
                   labelText: 'Write the group title',
                 ),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: (value) {
-                  // Check for empty value
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a list name';
-                  }
-
-                  final trimmedValue = value.trim().toLowerCase();
-
-                  // Check if name exists in any other list (excluding current list when updating)
-                  final nameExists =
-                      groupsLists?.any(
-                        (grouplist) =>
-                            grouplist.name.trim().toLowerCase() ==
-                                trimmedValue &&
-                            grouplist.id != widget.groupList?.id,
-                      ) ??
-                      false;
-
-                  if (nameExists) {
-                    return 'group name already exists';
-                  }
-
-                  return null;
-                },
+                validator: (value) => _validateInput(groupsLists, value!),
               ),
             ],
 

@@ -4,7 +4,7 @@ import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
-import 'package:blazely/widgets/forms/manage_group_from.dart';
+import 'package:blazely/widgets/forms/manage_group_form.dart';
 import 'package:blazely/widgets/forms/manage_list_form.dart';
 import 'package:blazely/widgets/tiles/group_list_tile.dart';
 import 'package:blazely/widgets/appbars/home_screen_appbar.dart';

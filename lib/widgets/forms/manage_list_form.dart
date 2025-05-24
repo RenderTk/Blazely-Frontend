@@ -1,4 +1,6 @@
+import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task_list.dart';
+import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
@@ -152,9 +154,10 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
   Color _resolveActionBackgroundButtonColor(
     bool isDarkMode,
     List<TaskList> taskLists,
+    List<GroupList> groupsLists,
   ) {
     if (widget.type == ManageListFormType.create) {
-      if (!_isDataValid(taskLists)) {
+      if (!_isDataValid(taskLists, groupsLists)) {
         return isDarkMode ? Colors.grey.shade500 : Colors.grey.shade700;
       }
 
@@ -170,27 +173,74 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
     }
   }
 
-  bool _isDataValid(List<TaskList> taskLists) {
+  bool _isDataValid(List<TaskList> taskLists, List<GroupList> groupsLists) {
+    final trimmedInputName = textController.text.trim().toLowerCase();
+    final allLists = [
+      ...taskLists,
+      ...groupsLists.expand((groupList) => groupList.lists!),
+    ];
+
     final isTaskListNameUnique =
-        !taskLists.any(
-          (taskList) =>
-              taskList.name.trim().toLowerCase() ==
-              textController.text.trim().toLowerCase(),
+        !allLists.any(
+          (taskList) => taskList.name.trim().toLowerCase() == trimmedInputName,
         );
 
-    return (textController.text.isNotEmpty &&
-            emojiController.text.isNotEmpty &&
-            (isTaskListNameUnique ||
-                (widget.type == ManageListFormType.update &&
-                    textController.text == widget.taskList!.name)) ||
-        widget.type == ManageListFormType.delete);
+    bool isTextNotEmpty = textController.text.isNotEmpty;
+    bool isNameValid = isTaskListNameUnique;
+    bool isDeleteOperation = widget.type == ManageListFormType.delete;
+    bool isEmojiNotEmpty = emojiController.text.isNotEmpty;
+
+    return isTextNotEmpty && isNameValid && isEmojiNotEmpty ||
+        isDeleteOperation;
+  }
+
+  String? _validateInput(
+    List<TaskList> taskLists,
+    List<GroupList> groupsLists,
+    String? value,
+  ) {
+    bool isDeleteOperation = widget.type == ManageListFormType.delete;
+    // Skip validation for delete operation
+    if (isDeleteOperation) {
+      return null;
+    }
+
+    // Check for empty value
+    if (value?.trim().isEmpty ?? true) {
+      return 'Please enter a list name';
+    }
+
+    final trimmedValue = value?.trim().toLowerCase();
+
+    // Check if name exists in any other list (excluding current list when updating)
+
+    final allLists = [
+      ...taskLists,
+      ...groupsLists.expand((groupList) => groupList.lists!),
+    ];
+    final nameExists = allLists.any(
+      (taskList) => taskList.name.trim().toLowerCase() == trimmedValue,
+    );
+
+    if (nameExists) {
+      return 'List name already exists';
+    }
+
+    final isEmojiEmpty = emojiController.text.isEmpty;
+
+    if (isEmojiEmpty) {
+      return 'Please choose an emoji';
+    }
+
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
     final taskListAsyncNotifier = ref.watch(taskListAsyncProvider.notifier);
-    final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
     final taskLists = ref.read(taskListAsyncProvider).value;
+    final groupsLists = ref.read(groupListAsyncProvider).value;
+    final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     ref.listen(taskListAsyncProvider, (previous, next) {
@@ -259,30 +309,12 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                       controller: textController,
                       maxLength: 100,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
-                      validator: (value) {
-                        // Check for empty value
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter a list name';
-                        }
-
-                        final trimmedValue = value.trim().toLowerCase();
-
-                        // Check if name exists in any other list (excluding current list when updating)
-                        final nameExists =
-                            taskLists?.any(
-                              (taskList) =>
-                                  taskList.name.trim().toLowerCase() ==
-                                      trimmedValue.toLowerCase() &&
-                                  taskList.id != widget.taskList?.id,
-                            ) ??
-                            false;
-
-                        if (nameExists) {
-                          return 'List name already exists';
-                        }
-
-                        return null;
-                      },
+                      validator:
+                          (value) => _validateInput(
+                            taskLists ?? [],
+                            groupsLists ?? [],
+                            value!,
+                          ),
                     ),
                   ),
                 ],
@@ -337,11 +369,12 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                                   _resolveActionBackgroundButtonColor(
                                     isDarkMode,
                                     taskLists ?? [],
+                                    groupsLists ?? [],
                                   ),
                                 ),
                               ),
                       onPressed:
-                          _isDataValid(taskLists ?? [])
+                          _isDataValid(taskLists ?? [], groupsLists ?? [])
                               ? () async {
                                 await _resolveAction(
                                   context,

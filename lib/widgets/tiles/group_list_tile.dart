@@ -1,6 +1,6 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/providers/group_list_provider.dart';
-import 'package:blazely/widgets/forms/manage_group_from.dart';
+import 'package:blazely/widgets/forms/manage_group_form.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
