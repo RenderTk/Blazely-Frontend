@@ -2,14 +2,14 @@ import 'package:blazely/models/task_list.dart';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
-const usersTaskListsUrl = "/api/lists/";
+const usersTaskListsUrl = "/api/lists/?has_group=false";
 const createTaskListUrl = "/api/lists/";
 String updateAndDeleteUrl = "api/lists/<listId>/";
 
 class TaskListService {
   final logger = Logger();
 
-  Future<List<TaskList>> getLoggedInUserTaskLists(Dio dio) async {
+  Future<List<TaskList>> getLoggedInUserTaskListsWithoutGroup(Dio dio) async {
     try {
       final response = await dio.get(usersTaskListsUrl);
 

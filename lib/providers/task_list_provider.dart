@@ -24,7 +24,8 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
   Future<List<TaskList>> build() async {
     try {
       dio = ref.watch(dioProvider);
-      final groups = await _taskListService.getLoggedInUserTaskLists(dio);
+      final groups = await _taskListService
+          .getLoggedInUserTaskListsWithoutGroup(dio);
       return groups;
     } catch (e, stackTrace) {
       logger.e(

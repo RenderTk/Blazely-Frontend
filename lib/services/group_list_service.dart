@@ -5,6 +5,9 @@ import 'package:logger/logger.dart';
 const userGroupsListsUrl = '/api/groups/';
 const createGroupUrl = '/api/groups/';
 String updateAndDeleteUrl = "api/groups/<groupId>/";
+String manageListsUrl = "api/groups/<groupId>/manage_lists/";
+
+enum ManageListsOnGroupAction { add, remove }
 
 class GroupListService {
   final logger = Logger();
@@ -74,6 +77,33 @@ class GroupListService {
       }
     } catch (e, stackTrace) {
       logger.e("Failed to delete the group.", error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> manageGroupLists(
+    Dio dio,
+    GroupList groupList,
+    ManageListsOnGroupAction action,
+  ) async {
+    if (groupList.id == null || groupList.lists == null) return;
+    try {
+      final response = await dio.patch(
+        manageListsUrl.replaceAll("<groupId>", "${groupList.id}"),
+        queryParameters: {"action": action.name},
+        data: {"tasklist_ids": groupList.lists!.map((e) => e.id).toList()},
+      );
+      if (response.statusCode != 200) {
+        throw Exception(
+          "An error occurred when updating the tasklist on the group.",
+        );
+      }
+    } catch (e, stackTrace) {
+      logger.e(
+        "Failed to update the tasklist on the group.",
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }

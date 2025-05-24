@@ -1,7 +1,9 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
 import 'package:blazely/providers/dio_provider.dart';
+import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/services/group_list_service.dart';
+import 'package:blazely/services/task_list_service.dart';
 import 'package:blazely/services/task_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +25,7 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
   final logger = Logger();
   final _groupListService = GroupListService();
   final _taskService = TaskService();
+  final taskListService = TaskListService();
   late Dio dio;
 
   @override
@@ -39,93 +42,6 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
       );
       return [];
     }
-  }
-
-  Future<void> deleteGroupList(GroupList groupList) async {
-    var groupListState = [...state.value!];
-    if (groupListState.isEmpty) return;
-
-    if (groupList.id == null || groupList.id! <= 0) return;
-
-    state = await AsyncValue.guard(() async {
-      // Update state on server
-      await _groupListService.deleteGroup(dio, groupList);
-
-      // Update state locally
-      groupListState.removeWhere((gl) => gl.id == groupList.id);
-      return groupListState;
-    });
-  }
-
-  Future<void> updateGroupList(GroupList groupList) async {
-    var groupListState = [...state.value!];
-
-    if (groupListState.isEmpty) return;
-
-    if (groupList.id == null || groupList.id! <= 0) return;
-
-    state = await AsyncValue.guard(() async {
-      // Update state on server
-      await _groupListService.updateGroup(dio, groupList);
-
-      // Update state locally
-      groupListState[groupListState.indexWhere((gl) => gl.id == groupList.id)] =
-          groupList;
-      return groupListState;
-    });
-  }
-
-  Future<GroupList?> addGroupList(String name) async {
-    var groupListState = [...state.value!];
-
-    if (name.isEmpty) return null;
-
-    GroupList? createdGroupList;
-    state = await AsyncValue.guard(() async {
-      createdGroupList = await _groupListService.createGroup(dio, name);
-
-      if (createdGroupList == null) {
-        throw Exception("Failed to create group list.");
-      }
-      groupListState.add(createdGroupList!);
-      return groupListState;
-    });
-
-    return createdGroupList;
-  }
-
-  Future<void> toggleIsCompletedOnTask(
-    int groupId,
-    int taskListId,
-    int taskId,
-    bool isCompleted,
-  ) async {
-    final affectedIndexes = _getAffectedIndexes(groupId, taskListId, taskId);
-    if (affectedIndexes == null) return;
-
-    var taskToUpdate = _getTaskToUpdate(affectedIndexes);
-    if (taskToUpdate == null) return;
-
-    taskToUpdate = taskToUpdate.copyWith(isCompleted: isCompleted);
-
-    await _updateTask(affectedIndexes, taskToUpdate);
-  }
-
-  Future<void> toggleIsImportantOnTask(
-    int groupId,
-    int taskListId,
-    int taskId,
-    bool isImportant,
-  ) async {
-    final affectedIndexes = _getAffectedIndexes(groupId, taskListId, taskId);
-    if (affectedIndexes == null) return;
-
-    var taskToUpdate = _getTaskToUpdate(affectedIndexes);
-    if (taskToUpdate == null) return;
-
-    taskToUpdate = taskToUpdate.copyWith(isImportant: isImportant);
-
-    await _updateTask(affectedIndexes, taskToUpdate);
   }
 
   Future<void> _updateTask(
@@ -208,6 +124,124 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
       taskListIndex: affectedTaskListIndex,
       taskIndex: affectedTaskIndex,
     );
+  }
+
+  Future<GroupList?> addGroupList(String name) async {
+    var groupListState = [...state.value!];
+
+    if (name.isEmpty) return null;
+
+    GroupList? createdGroupList;
+    state = await AsyncValue.guard(() async {
+      createdGroupList = await _groupListService.createGroup(dio, name);
+
+      if (createdGroupList == null) {
+        throw Exception("Failed to create group list.");
+      }
+      groupListState.add(createdGroupList!);
+      return groupListState;
+    });
+
+    return createdGroupList;
+  }
+
+  Future<void> deleteGroupList(GroupList groupList) async {
+    var groupListState = [...state.value!];
+    if (groupListState.isEmpty) return;
+
+    if (groupList.id == null || groupList.id! <= 0) return;
+
+    state = await AsyncValue.guard(() async {
+      // Update state on server
+      await _groupListService.deleteGroup(dio, groupList);
+
+      // Update state locally
+      groupListState.removeWhere((gl) => gl.id == groupList.id);
+      return groupListState;
+    });
+  }
+
+  Future<void> updateGroupList(GroupList groupList) async {
+    var groupListState = [...state.value!];
+
+    if (groupListState.isEmpty) return;
+
+    if (groupList.id == null || groupList.id! <= 0) return;
+
+    state = await AsyncValue.guard(() async {
+      // Update state on server
+      await _groupListService.updateGroup(dio, groupList);
+
+      // Update state locally
+      groupListState[groupListState.indexWhere((gl) => gl.id == groupList.id)] =
+          groupList;
+      return groupListState;
+    });
+  }
+
+  Future<void> toggleIsCompletedOnTask(
+    int groupId,
+    int taskListId,
+    int taskId,
+    bool isCompleted,
+  ) async {
+    final affectedIndexes = _getAffectedIndexes(groupId, taskListId, taskId);
+    if (affectedIndexes == null) return;
+
+    var taskToUpdate = _getTaskToUpdate(affectedIndexes);
+    if (taskToUpdate == null) return;
+
+    taskToUpdate = taskToUpdate.copyWith(isCompleted: isCompleted);
+
+    await _updateTask(affectedIndexes, taskToUpdate);
+  }
+
+  Future<void> toggleIsImportantOnTask(
+    int groupId,
+    int taskListId,
+    int taskId,
+    bool isImportant,
+  ) async {
+    final affectedIndexes = _getAffectedIndexes(groupId, taskListId, taskId);
+    if (affectedIndexes == null) return;
+
+    var taskToUpdate = _getTaskToUpdate(affectedIndexes);
+    if (taskToUpdate == null) return;
+
+    taskToUpdate = taskToUpdate.copyWith(isImportant: isImportant);
+
+    await _updateTask(affectedIndexes, taskToUpdate);
+  }
+
+  Future<void> unGroupLists(GroupList groupList) async {
+    var groupListState = [...state.value!];
+    if (groupListState.isEmpty) return;
+
+    if (groupList.id == null || groupList.id! <= 0) return;
+
+    if (groupList.lists == null || groupList.lists!.isEmpty) return;
+
+    final groupExists =
+        groupListState.where((gl) => gl.id == groupList.id).firstOrNull != null;
+
+    if (groupExists == false) return;
+
+    state = await AsyncValue.guard(() async {
+      // remove the group from the tasks lists
+      await _groupListService.manageGroupLists(
+        dio,
+        groupList,
+        ManageListsOnGroupAction.remove,
+      );
+      //trigger rebuild on tasks list provider
+      ref.invalidate(taskListAsyncProvider);
+
+      // Update state locally => remove lists from group
+      groupListState[groupListState.indexWhere(
+        (gl) => gl.id == groupList.id,
+      )] = groupList.copyWith(lists: []);
+      return groupListState;
+    });
   }
 }
 

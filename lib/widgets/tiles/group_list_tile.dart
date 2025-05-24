@@ -1,7 +1,9 @@
 import 'package:blazely/models/group_list.dart';
+import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/widgets/forms/manage_group_from.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum PopMenuValues {
   addOrRemoveTaskList,
@@ -10,23 +12,23 @@ enum PopMenuValues {
   deleteGroup,
 }
 
-class GroupListTile extends StatefulWidget {
+class GroupListTile extends ConsumerStatefulWidget {
   const GroupListTile({
     super.key,
     required this.title,
     required this.taskListsTiles,
-    required this.group,
+    required this.groupList,
   });
 
   final String title;
   final List<TaskListTile> taskListsTiles;
-  final GroupList? group;
+  final GroupList? groupList;
 
   @override
-  State<GroupListTile> createState() => _GroupListTileState();
+  ConsumerState<GroupListTile> createState() => _GroupListTileState();
 }
 
-class _GroupListTileState extends State<GroupListTile> {
+class _GroupListTileState extends ConsumerState<GroupListTile> {
   bool isExpanded = false;
 
   void showGroupForm(ManagGroupFormType type) {
@@ -39,13 +41,15 @@ class _GroupListTileState extends State<GroupListTile> {
               borderRadius: BorderRadius.circular(25),
             ),
             backgroundColor: Theme.of(context).colorScheme.surface,
-            child: ManageGroupFrom(type: type, groupList: widget.group),
+            child: ManageGroupFrom(type: type, groupList: widget.groupList),
           ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
+
     return ExpansionTile(
       onExpansionChanged: (value) => setState(() => isExpanded = value),
       leading:
@@ -68,11 +72,20 @@ class _GroupListTileState extends State<GroupListTile> {
             PopupMenuButton(
               onSelected: (value) async {
                 if (value == PopMenuValues.addOrRemoveTaskList.toString()) {
+                  ///
                   //TODO: Add or remove task list
+                  //
                 } else if (value == PopMenuValues.changeName.toString()) {
+                  ///
                   showGroupForm(ManagGroupFormType.update);
+
+                  ///
                 } else if (value == PopMenuValues.unGroupLists.toString()) {
-                  //TODO: Ungroup lists
+                  ///
+                  if (widget.groupList == null) return;
+                  await groupListAsyncNotifier.unGroupLists(widget.groupList!);
+
+                  ///
                 } else if (value == PopMenuValues.deleteGroup.toString()) {
                   showGroupForm(ManagGroupFormType.delete);
                 }
@@ -93,13 +106,14 @@ class _GroupListTileState extends State<GroupListTile> {
                       title: Text('Change group name'),
                     ),
                   ),
-                  PopupMenuItem<String>(
-                    value: PopMenuValues.unGroupLists.toString(),
-                    child: ListTile(
-                      leading: Icon(Icons.line_style_sharp),
-                      title: Text('Ungroup lists'),
+                  if ((widget.groupList?.lists?.isNotEmpty ?? false))
+                    PopupMenuItem<String>(
+                      value: PopMenuValues.unGroupLists.toString(),
+                      child: ListTile(
+                        leading: Icon(Icons.line_style_sharp),
+                        title: Text('Ungroup lists'),
+                      ),
                     ),
-                  ),
                   PopupMenuItem<String>(
                     value: PopMenuValues.deleteGroup.toString(),
                     child: ListTile(

@@ -13,6 +13,7 @@ import 'package:blazely/widgets/tiles/task_list_tile_group.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -53,7 +54,7 @@ class HomeScreen extends ConsumerWidget {
     for (final groupList in groupLists) {
       var groupTaskListTile = GroupListTile(
         title: groupList.name,
-        group: groupList,
+        groupList: groupList,
         taskListsTiles:
             groupList.lists
                 ?.map(
@@ -122,6 +123,7 @@ class HomeScreen extends ConsumerWidget {
               "Something went wrong loading your lists, please try again later.",
           type: SnackbarType.error,
         );
+        Logger().e(next.error);
       }
     });
 
@@ -133,6 +135,7 @@ class HomeScreen extends ConsumerWidget {
               "Something went wrong loading your groups, please try again later.",
           type: SnackbarType.error,
         );
+        Logger().e(next.error);
       }
     });
 
