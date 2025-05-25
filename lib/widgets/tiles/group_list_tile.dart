@@ -1,5 +1,6 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/providers/group_list_provider.dart';
+import 'package:blazely/widgets/forms/add_or_remove_lists_form.dart';
 import 'package:blazely/widgets/forms/manage_group_form.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,21 @@ class _GroupListTileState extends ConsumerState<GroupListTile> {
     );
   }
 
+  void showAddOrRemoveListsForm(GroupList groupList) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => Dialog(
+            insetPadding: const EdgeInsets.all(20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            child: AddOrRemoveListsForm(groupListId: groupList.id ?? -1),
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
@@ -73,7 +89,7 @@ class _GroupListTileState extends ConsumerState<GroupListTile> {
               onSelected: (value) async {
                 if (value == PopMenuValues.addOrRemoveTaskList.toString()) {
                   ///
-                  //TODO: Add or remove task list
+                  showAddOrRemoveListsForm(widget.groupList!);
                   //
                 } else if (value == PopMenuValues.changeName.toString()) {
                   ///
@@ -83,7 +99,10 @@ class _GroupListTileState extends ConsumerState<GroupListTile> {
                 } else if (value == PopMenuValues.unGroupLists.toString()) {
                   ///
                   if (widget.groupList == null) return;
-                  await groupListAsyncNotifier.unGroupLists(widget.groupList!);
+                  await groupListAsyncNotifier.unGroupTaskList(
+                    widget.groupList!,
+                    widget.groupList!.lists!,
+                  );
 
                   ///
                 } else if (value == PopMenuValues.deleteGroup.toString()) {

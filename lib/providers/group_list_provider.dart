@@ -1,5 +1,6 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
+import 'package:blazely/models/task_list.dart';
 import 'package:blazely/providers/dio_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/services/group_list_service.dart';
@@ -213,7 +214,10 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
     await _updateTask(affectedIndexes, taskToUpdate);
   }
 
-  Future<void> unGroupLists(GroupList groupList) async {
+  Future<void> unGroupTaskList(
+    GroupList groupList,
+    List<TaskList> taskLists,
+  ) async {
     var groupListState = [...state.value!];
     if (groupListState.isEmpty) return;
 
@@ -228,18 +232,122 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
 
     state = await AsyncValue.guard(() async {
       // remove the group from the tasks lists
-      await _groupListService.manageGroupLists(
-        dio,
-        groupList,
-        ManageListsOnGroupAction.remove,
-      );
+      await _groupListService.unGroupLists(dio, groupList, taskLists);
+
       //trigger rebuild on tasks list provider
       ref.invalidate(taskListAsyncProvider);
 
+      final updatedTaskLists =
+          groupList.lists?.where((li) => !taskLists.contains(li)).toList() ??
+          [];
       // Update state locally => remove lists from group
       groupListState[groupListState.indexWhere(
         (gl) => gl.id == groupList.id,
-      )] = groupList.copyWith(lists: []);
+      )] = groupList.copyWith(lists: updatedTaskLists);
+      return groupListState;
+    });
+  }
+
+  Future<void> groupTaskLists(
+    GroupList groupList,
+    List<TaskList> taskLists,
+  ) async {
+    var groupListState = [...state.value!];
+    if (groupList.id == null || groupList.id! <= 0) return;
+
+    final groupExists =
+        groupListState.where((gl) => gl.id == groupList.id).firstOrNull != null;
+
+    if (groupExists == false) return;
+
+    state = await AsyncValue.guard(() async {
+      // remove the group from the tasks lists
+      await _groupListService.groupLists(dio, groupList, taskLists);
+
+      //trigger rebuild on tasks list provider
+      ref.invalidate(taskListAsyncProvider);
+
+      final updatedTaskLists = [...groupList.lists!, ...taskLists];
+      // Update state locally => remove lists from group
+      groupListState[groupListState.indexWhere(
+        (gl) => gl.id == groupList.id,
+      )] = groupList.copyWith(lists: updatedTaskLists);
+      return groupListState;
+    });
+  }
+
+  Future<void> manageTaskList(
+    GroupList groupList,
+    TaskList taskList,
+    ManageTaskListOnGroupAction action,
+  ) async {
+    var groupListState = [...state.value!];
+    if (groupListState.isEmpty) return;
+
+    if (groupList.id == null || groupList.id! <= 0) return;
+
+    // Check if the task list exists in the group before trying to remove
+    // it from the group
+    if (action == ManageTaskListOnGroupAction.remove) {
+      final taskListExistsInGroup =
+          groupList.lists?.where((tl) => tl.id == taskList.id).firstOrNull !=
+          null;
+      if (taskListExistsInGroup == false) return;
+    }
+
+    state = await AsyncValue.guard(() async {
+      if (action == ManageTaskListOnGroupAction.add) {
+        await _groupListService.manageList(
+          dio,
+          groupList,
+          taskList,
+          ManageTaskListOnGroupAction.add,
+        );
+
+        //todo: update to use freezed copywith
+        final updatedTaskList = taskList.copyWith(group: groupList.id);
+        updatedTaskList.group = groupList.id;
+
+        groupList.lists?.add(updatedTaskList);
+
+        // Update state locally
+        groupListState[groupListState.indexWhere(
+              (gl) => gl.id == groupList.id,
+            )] =
+            groupList;
+
+        //the tasklist added to this group, remove it from the tasklist provider
+        await ref
+            .read(taskListAsyncProvider.notifier)
+            .removeTaskListAddedToGroup(updatedTaskList);
+
+        //
+      } else if (action == ManageTaskListOnGroupAction.remove) {
+        await _groupListService.manageList(
+          dio,
+          groupList,
+          taskList,
+          ManageTaskListOnGroupAction.remove,
+        );
+
+        //todo: update to use freezed copywith
+        final updatedTaskList = taskList.copyWith(group: null);
+        updatedTaskList.group = null;
+
+        groupList.lists?.removeWhere((tl) => tl.id == taskList.id);
+
+        // Update state locally
+        groupListState[groupListState.indexWhere(
+              (gl) => gl.id == groupList.id,
+            )] =
+            groupList;
+
+        //the tasklist removed from this group add it to the tasklist provider
+        await ref
+            .read(taskListAsyncProvider.notifier)
+            .addTaskListRemovedFromGroup(updatedTaskList);
+      }
+
       return groupListState;
     });
   }

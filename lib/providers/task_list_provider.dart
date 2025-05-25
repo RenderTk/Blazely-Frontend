@@ -73,6 +73,34 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
     });
   }
 
+  Future<void> addTaskListRemovedFromGroup(TaskList taskList) async {
+    var taskListState = [...state.value!];
+
+    if (taskList.id == null || taskList.id! <= 0) return;
+
+    state = await AsyncValue.guard(() async {
+      // Update state locally
+      taskListState.add(taskList);
+
+      return taskListState;
+    });
+  }
+
+  Future<void> removeTaskListAddedToGroup(TaskList taskList) async {
+    var taskListState = [...state.value!];
+
+    if (taskListState.isEmpty) return;
+
+    if (taskList.id == null || taskList.id! <= 0) return;
+
+    state = await AsyncValue.guard(() async {
+      // Update state locally
+      taskListState.removeWhere((tl) => tl.id == taskList.id);
+
+      return taskListState;
+    });
+  }
+
   Future<TaskList?> addTaskList(String name, String emoji) async {
     var taskListState = [...state.value!];
 

@@ -1,4 +1,5 @@
 import 'package:blazely/models/group_list.dart';
+import 'package:blazely/models/task_list.dart';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
@@ -7,7 +8,7 @@ const createGroupUrl = '/api/groups/';
 String updateAndDeleteUrl = "api/groups/<groupId>/";
 String manageListsUrl = "api/groups/<groupId>/manage_lists/";
 
-enum ManageListsOnGroupAction { add, remove }
+enum ManageTaskListOnGroupAction { add, remove }
 
 class GroupListService {
   final logger = Logger();
@@ -81,17 +82,79 @@ class GroupListService {
     }
   }
 
-  Future<void> manageGroupLists(
+  Future<void> unGroupLists(
     Dio dio,
     GroupList groupList,
-    ManageListsOnGroupAction action,
+    List<TaskList> taskLists,
   ) async {
     if (groupList.id == null || groupList.lists == null) return;
     try {
       final response = await dio.patch(
         manageListsUrl.replaceAll("<groupId>", "${groupList.id}"),
+        queryParameters: {"action": ManageTaskListOnGroupAction.remove.name},
+        data: {"tasklist_ids": taskLists.map((e) => e.id).toList()},
+      );
+      if (response.statusCode != 200) {
+        throw Exception(
+          "An error occurred when updating the tasklists on the group.",
+        );
+      }
+    } catch (e, stackTrace) {
+      logger.e(
+        "Failed to update the tasklists on the group.",
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> groupLists(
+    Dio dio,
+    GroupList groupList,
+    List<TaskList> taskLists,
+  ) async {
+    if (groupList.id == null || groupList.lists == null) return;
+    if (taskLists.isEmpty) return;
+    try {
+      final response = await dio.patch(
+        manageListsUrl.replaceAll("<groupId>", "${groupList.id}"),
+        queryParameters: {"action": ManageTaskListOnGroupAction.add.name},
+        data: {"tasklist_ids": taskLists.map((e) => e.id).toList()},
+      );
+      if (response.statusCode != 200) {
+        throw Exception(
+          "An error occurred when updating the tasklists on the group.",
+        );
+      }
+    } catch (e, stackTrace) {
+      logger.e(
+        "Failed to update the tasklists on the group.",
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> manageList(
+    Dio dio,
+    GroupList groupList,
+    TaskList taskList,
+    ManageTaskListOnGroupAction action,
+  ) async {
+    if (groupList.id == null ||
+        groupList.lists == null ||
+        taskList.id == null) {
+      return;
+    }
+    try {
+      final response = await dio.patch(
+        manageListsUrl.replaceAll("<groupId>", "${groupList.id}"),
         queryParameters: {"action": action.name},
-        data: {"tasklist_ids": groupList.lists!.map((e) => e.id).toList()},
+        data: {
+          "tasklist_ids": [taskList.id],
+        },
       );
       if (response.statusCode != 200) {
         throw Exception(
