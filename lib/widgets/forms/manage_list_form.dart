@@ -7,6 +7,7 @@ import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:blazely/widgets/pickers/emoji_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/web.dart';
 
 enum ManageListFormType { create, update, delete }
 
@@ -24,6 +25,8 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
   bool _showEmojiPicker = false;
   TextEditingController textController = TextEditingController();
   TextEditingController emojiController = TextEditingController();
+  String? previousEmoji;
+
   final errorMsgMap = {
     ManageListFormType.create: "creating",
     ManageListFormType.update: "updating",
@@ -34,6 +37,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
   void initState() {
     super.initState();
     if (widget.type == ManageListFormType.update) {
+      previousEmoji = widget.taskList!.emoji;
       emojiController.text = widget.taskList!.emoji;
       textController.text = widget.taskList!.name;
     }
@@ -89,7 +93,21 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
   Future<void> _updateList(
     BuildContext context,
     TaskListAsyncNotifier taskListAsyncNotifier,
+    GroupListAsyncNotifier groupListAsyncNotifier,
   ) async {
+    //
+    // if the list has a group it is owned by the group list provider
+    if (widget.taskList?.group != null) {
+      await groupListAsyncNotifier.updateTaskListInGroup(
+        widget.taskList!.copyWith(
+          name: textController.text,
+          emoji: emojiController.text,
+        ),
+      );
+      return;
+    }
+
+    //if the list has no group it is own by the task list provider
     await taskListAsyncNotifier.updateTaskList(
       widget.taskList!.copyWith(
         name: textController.text,
@@ -101,8 +119,19 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
   Future<void> _deleteList(
     BuildContext context,
     TaskListAsyncNotifier taskListAsyncNotifier,
+    GroupListAsyncNotifier groupListAsyncNotifier,
   ) async {
-    await taskListAsyncNotifier.deleteTaskList(widget.taskList!);
+    // if the list has a group it is owned by the group list provider
+    if (widget.taskList?.group != null) {
+      //
+      await groupListAsyncNotifier.deleteTasklistInGroup(widget.taskList!);
+      //
+    } else {
+      //if the list has no group it is own by the task list provider
+      await taskListAsyncNotifier.deleteTaskList(widget.taskList!);
+      //
+    }
+
     if (context.mounted) {
       Navigator.pop(context);
     }
@@ -133,6 +162,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
   Future<void> _resolveAction(
     BuildContext context,
     TaskListAsyncNotifier taskListAsyncNotifier,
+    GroupListAsyncNotifier groupListAsyncNotifier,
   ) async {
     if (textController.text.isNotEmpty &&
         emojiController.text.isNotEmpty &&
@@ -144,10 +174,10 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
         emojiController.text.isNotEmpty &&
         widget.type == ManageListFormType.update &&
         context.mounted) {
-      await _updateList(context, taskListAsyncNotifier);
+      await _updateList(context, taskListAsyncNotifier, groupListAsyncNotifier);
       //
     } else if (widget.type == ManageListFormType.delete && context.mounted) {
-      await _deleteList(context, taskListAsyncNotifier);
+      await _deleteList(context, taskListAsyncNotifier, groupListAsyncNotifier);
     }
   }
 
@@ -186,7 +216,11 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
         );
 
     bool isTextNotEmpty = textController.text.isNotEmpty;
-    bool isNameValid = isTaskListNameUnique;
+    bool isNameValid =
+        widget.type == ManageListFormType.update
+            ? previousEmoji != emojiController.text || isTaskListNameUnique
+            : isTaskListNameUnique;
+
     bool isDeleteOperation = widget.type == ManageListFormType.delete;
     bool isEmojiNotEmpty = emojiController.text.isNotEmpty;
 
@@ -237,7 +271,8 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
 
   @override
   Widget build(BuildContext context) {
-    final taskListAsyncNotifier = ref.watch(taskListAsyncProvider.notifier);
+    final taskListAsyncNotifier = ref.read(taskListAsyncProvider.notifier);
+    final groupListAsyncNotifier = ref.read(groupListAsyncProvider.notifier);
     final taskLists = ref.read(taskListAsyncProvider).value;
     final groupsLists = ref.read(groupListAsyncProvider).value;
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
@@ -252,6 +287,20 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
               "Something went wrong ${errorMsgMap[widget.type]} the list. Please try again later.",
           type: SnackbarType.error,
         );
+        Logger().e(next.error, stackTrace: next.stackTrace);
+      }
+    });
+
+    ref.listen(groupListAsyncProvider, (previous, next) {
+      Navigator.pop(context);
+      if (next is AsyncError && isCurrent) {
+        SnackbarHelper.showCustomSnackbar(
+          context: context,
+          message:
+              "Something went wrong ${errorMsgMap[widget.type]} the list. Please try again later.",
+          type: SnackbarType.error,
+        );
+        Logger().e(next.error, stackTrace: next.stackTrace);
       }
     });
 
@@ -379,6 +428,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                                 await _resolveAction(
                                   context,
                                   taskListAsyncNotifier,
+                                  groupListAsyncNotifier,
                                 );
                               }
                               : null,
