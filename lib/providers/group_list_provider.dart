@@ -45,6 +45,27 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
     }
   }
 
+  List<GroupList> _createDeepCopyOfState() {
+    final groupListState = [
+      ...state.value!.map(
+        (group) => group.copyWith(
+          lists:
+              group.lists
+                  ?.map(
+                    (taskList) => taskList.copyWith(
+                      tasks:
+                          taskList.tasks
+                              ?.map((task) => task.copyWith())
+                              .toList(),
+                    ),
+                  )
+                  .toList(),
+        ),
+      ),
+    ];
+    return groupListState;
+  }
+
   Future<void> _updateTask(
     _AffectedIndexes affectedIndexes,
     Task updatedTask,
@@ -362,6 +383,45 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
       updatedGroupListState[groupIndex] = updatedGroup;
 
       return updatedGroupListState;
+    });
+  }
+
+  Future<void> addTask(int groupId, int taskListId, Task task) async {
+    // Create a proper deep copy
+    final groupListState = _createDeepCopyOfState();
+
+    final int affectedGroupIndex = groupListState.indexWhere(
+      (gl) => gl.id == groupId,
+    );
+
+    if (affectedGroupIndex == -1) return;
+
+    final int? affectedTaskListIndex = groupListState[affectedGroupIndex].lists
+        ?.indexWhere((li) => li.id == taskListId);
+
+    if (affectedTaskListIndex == null || affectedTaskListIndex == -1) return;
+
+    state = await AsyncValue.guard(() async {
+      final groupList = groupListState[affectedGroupIndex];
+      final taskList = groupList.lists?[affectedTaskListIndex];
+
+      // Create the task on the server
+      final createdTask = await _taskService.createTask(
+        dio,
+        task.text,
+        task.dueDate,
+        task.reminderDate,
+        task.isImportant ?? false,
+        taskList?.id,
+        groupList.id,
+        TaskCreationContext.group,
+      );
+
+      // Add the task to the copied state
+      groupListState[affectedGroupIndex].lists?[affectedTaskListIndex].tasks!
+          .add(createdTask);
+
+      return groupListState;
     });
   }
 }

@@ -24,11 +24,21 @@ class GroupList {
     'lists': lists?.map((x) => x.toJson()).toList(),
   };
 
+  // GroupList copyWith({int? id, String? name, List<TaskList>? lists}) {
+  //   return GroupList(
+  //     id: id ?? this.id,
+  //     name: name ?? this.name,
+  //     lists: lists ?? this.lists,
+  //   );
+  // }
   GroupList copyWith({int? id, String? name, List<TaskList>? lists}) {
     return GroupList(
       id: id ?? this.id,
       name: name ?? this.name,
-      lists: lists ?? this.lists,
+      lists:
+          lists != null
+              ? lists.map((l) => l.copyWith()).toList()
+              : this.lists?.map((l) => l.copyWith()).toList(),
     );
   }
 }

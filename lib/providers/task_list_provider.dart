@@ -37,6 +37,97 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
     }
   }
 
+  List<TaskList> _createDeepCopyOfState() {
+    final taskListState = [
+      ...state.value!.map(
+        (taskList) => taskList.copyWith(
+          tasks: taskList.tasks?.map((task) => task.copyWith()).toList(),
+        ),
+      ),
+    ];
+    return taskListState;
+  }
+
+  Future<void> _updateTask(
+    _AffectedIndexes affectedIndexes,
+    Task updatedTask,
+  ) async {
+    if (state.value?.isEmpty ?? true) return;
+
+    state = await AsyncValue.guard(() async {
+      var taskListState = [...state.value!];
+
+      final taskList = taskListState.elementAtOrNull(
+        affectedIndexes.taskListIndex,
+      );
+      final task = taskList?.tasks?.elementAtOrNull(affectedIndexes.taskIndex);
+
+      if (taskList == null || task == null) {
+        throw Exception("Invalid index while updating task in the task list.");
+      }
+
+      // Update state on server
+      await _taskService.updateTask(dio, task);
+
+      // Update state locally
+      taskListState[affectedIndexes.taskListIndex].tasks?[affectedIndexes
+              .taskIndex] =
+          updatedTask;
+
+      return taskListState;
+    });
+  }
+
+  Task? _getTaskToUpdate(_AffectedIndexes affectedIndexes) {
+    var taskListState = [...state.value ?? []];
+    if (taskListState.isEmpty) return null;
+
+    var taskToUpdate =
+        taskListState[affectedIndexes.taskListIndex].tasks?[affectedIndexes
+            .taskIndex];
+
+    return taskToUpdate;
+  }
+
+  _AffectedIndexes? _getAffectedIndexes(int taskListId, int taskId) {
+    if (state.value?.isEmpty ?? true) return null;
+
+    final affectedTaskListIndex =
+        state.value?.indexWhere((tl) => tl.id == taskListId) ?? -1;
+    if (affectedTaskListIndex == -1) return null;
+
+    final affectedTaskIndex =
+        state.value?[affectedTaskListIndex].tasks!.indexWhere(
+          (t) => t.id == taskId,
+        ) ??
+        -1;
+    if (affectedTaskIndex == -1) return null;
+
+    return _AffectedIndexes(
+      taskListIndex: affectedTaskListIndex,
+      taskIndex: affectedTaskIndex,
+    );
+  }
+
+  Future<TaskList?> addTaskList(String name, String emoji) async {
+    var taskListState = [...state.value!];
+
+    if (name.isEmpty || emoji.isEmpty) return null;
+
+    TaskList? createdTaskList;
+    state = await AsyncValue.guard(() async {
+      createdTaskList = await _taskListService.createList(dio, name, emoji);
+
+      if (createdTaskList == null) {
+        throw Exception("Failed to create task list.");
+      }
+      taskListState.add(createdTaskList!);
+      return taskListState;
+    });
+
+    return createdTaskList;
+  }
+
   Future<void> deleteTaskList(TaskList taskList) async {
     var taskListState = [...state.value!];
     if (taskListState.isEmpty) return;
@@ -101,23 +192,33 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
     });
   }
 
-  Future<TaskList?> addTaskList(String name, String emoji) async {
-    var taskListState = [...state.value!];
+  Future<void> addTask(int taskListId, Task task) async {
+    final taskListsState = _createDeepCopyOfState();
 
-    if (name.isEmpty || emoji.isEmpty) return null;
+    final affectedTaskListIndex = taskListsState.indexWhere(
+      (tl) => tl.id == taskListId,
+    );
+    if (affectedTaskListIndex == -1) return;
 
-    TaskList? createdTaskList;
     state = await AsyncValue.guard(() async {
-      createdTaskList = await _taskListService.createList(dio, name, emoji);
+      // Update state on server
+      final taskList = taskListsState[affectedTaskListIndex];
 
-      if (createdTaskList == null) {
-        throw Exception("Failed to create task list.");
-      }
-      taskListState.add(createdTaskList!);
-      return taskListState;
+      // Create the task on the server
+      final createdTask = await _taskService.createTask(
+        dio,
+        task.text,
+        task.dueDate,
+        task.reminderDate,
+        task.isImportant ?? false,
+        taskList.id,
+        null,
+        TaskCreationContext.list,
+      );
+
+      taskListsState[affectedTaskListIndex].tasks?.add(createdTask);
+      return taskListsState;
     });
-
-    return createdTaskList;
   }
 
   Future<void> toggleIsImportantOnTask(
@@ -150,67 +251,6 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
     taskToUpdate = taskToUpdate.copyWith(isCompleted: isCompleted);
 
     await _updateTask(affectedIndexes, taskToUpdate);
-  }
-
-  Future<void> _updateTask(
-    _AffectedIndexes affectedIndexes,
-    Task updatedTask,
-  ) async {
-    if (state.value?.isEmpty ?? true) return;
-
-    state = await AsyncValue.guard(() async {
-      var taskListState = [...state.value!];
-
-      final taskList = taskListState.elementAtOrNull(
-        affectedIndexes.taskListIndex,
-      );
-      final task = taskList?.tasks?.elementAtOrNull(affectedIndexes.taskIndex);
-
-      if (taskList == null || task == null) {
-        throw Exception("Invalid index while updating task in the task list.");
-      }
-
-      // Update state on server
-      await _taskService.updateTask(dio, task);
-
-      // Update state locally
-      taskListState[affectedIndexes.taskListIndex].tasks?[affectedIndexes
-              .taskIndex] =
-          updatedTask;
-
-      return taskListState;
-    });
-  }
-
-  Task? _getTaskToUpdate(_AffectedIndexes affectedIndexes) {
-    var taskListState = [...state.value ?? []];
-    if (taskListState.isEmpty) return null;
-
-    var taskToUpdate =
-        taskListState[affectedIndexes.taskListIndex].tasks?[affectedIndexes
-            .taskIndex];
-
-    return taskToUpdate;
-  }
-
-  _AffectedIndexes? _getAffectedIndexes(int taskListId, int taskId) {
-    if (state.value?.isEmpty ?? true) return null;
-
-    final affectedTaskListIndex =
-        state.value?.indexWhere((tl) => tl.id == taskListId) ?? -1;
-    if (affectedTaskListIndex == -1) return null;
-
-    final affectedTaskIndex =
-        state.value?[affectedTaskListIndex].tasks!.indexWhere(
-          (t) => t.id == taskId,
-        ) ??
-        -1;
-    if (affectedTaskIndex == -1) return null;
-
-    return _AffectedIndexes(
-      taskListIndex: affectedTaskListIndex,
-      taskIndex: affectedTaskIndex,
-    );
   }
 }
 

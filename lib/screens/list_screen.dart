@@ -5,6 +5,7 @@ import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:blazely/widgets/animations/blazely_loading_widget.dart';
 import 'package:blazely/widgets/appbars/list_screen_appbar.dart';
+import 'package:blazely/widgets/forms/add_task_form.dart';
 import 'package:blazely/widgets/tiles/task_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -124,7 +125,23 @@ class ListScreen extends ConsumerWidget {
               ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: () {},
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder:
+                (context) => Dialog(
+                  insetPadding: const EdgeInsets.all(20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  child: AddTaskForm(
+                    taskListId: taskListId,
+                    groupListId: groupListId,
+                  ),
+                ),
+          );
+        },
       ),
     );
   }

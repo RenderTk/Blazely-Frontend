@@ -1,9 +1,13 @@
 import 'package:blazely/models/task.dart';
+import 'package:blazely/utils/date_time_parsers.dart';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
-String updateAndDeleteUrl = "api/tasks/<taskId>/";
-const createUrl = "api/tasks/";
+const updateAndDeleteUrl = "api/tasks/<taskId>/";
+const createInListUrl = "api/lists/<listId>/tasks/";
+const createInGroupUrl = "api/groups/<groupId>/lists/<listId>/tasks/";
+
+enum TaskCreationContext { list, group }
 
 class TaskService {
   final logger = Logger();
@@ -32,12 +36,58 @@ class TaskService {
     }
   }
 
-  Future deleteTask(Dio dio, Task task) async {
-    if (task.id == null) return;
-    return;
+  Future<Task> createTask(
+    Dio dio,
+    String text,
+    DateTime? dueDate,
+    DateTime? reminderDate,
+    bool isImportant,
+    int? listId,
+    int? groupId,
+    TaskCreationContext context,
+  ) async {
+    String url = "";
+    if (context == TaskCreationContext.list) {
+      //
+      if (listId == null) {
+        throw Exception("Cannot create task in list if listId is null.");
+      }
+      url = createInListUrl.replaceAll("<listId>", "$listId");
+    } else if (context == TaskCreationContext.group) {
+      //
+      if (listId == null || groupId == null) {
+        throw Exception(
+          "Cannot create task in group if listId or groupId is null.",
+        );
+      }
+
+      url = createInGroupUrl
+          .replaceAll("<groupId>", "$groupId")
+          .replaceAll("<listId>", "$listId");
+    }
+
+    final response = await dio.post(
+      url,
+      data: {
+        "text": text,
+        "due_date": dueDate != null ? dateFormatForApi.format(dueDate) : null,
+        "reminder_date":
+            reminderDate != null
+                ? dateTimeFormatForApi.format(reminderDate)
+                : null,
+        "is_important": isImportant,
+      },
+    );
+    // success code for post is 201
+    if (response.statusCode != 201) {
+      throw Exception("An error occurred when creating task.");
+    }
+    final createdTask = Task.fromJson(response.data);
+    return createdTask;
   }
 
-  Future createTask(Dio dio, Task task) async {
+  Future deleteTask(Dio dio, Task task) async {
+    if (task.id == null) return;
     return;
   }
 }

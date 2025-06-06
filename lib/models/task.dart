@@ -5,14 +5,14 @@ enum TaskBoleanProperty { isCompleted, isImportant }
 
 class Task {
   final int? id;
-  String? text;
+  String text;
   String? note;
   bool? isCompleted;
   bool? isImportant;
   DateTime? dueDate;
   DateTime? reminderDate;
   String priority;
-  final Label? label;
+  Label? label;
 
   Task({
     required this.id,
@@ -26,16 +26,19 @@ class Task {
     required this.label,
   });
 
+  Task.empty({this.id = -1, this.priority = '', this.text = ''});
+
   factory Task.fromJson(Map<String, dynamic> json) => Task(
     id: json['id'],
     text: json['text'],
     note: json['note'],
     isCompleted: json['is_completed'],
     isImportant: json['is_important'],
-    dueDate: json['due_date'] != null ? DateTime.parse(json['due_date']) : null,
+    dueDate:
+        json['due_date'] != null ? DateTime.tryParse(json['due_date']) : null,
     reminderDate:
         json['reminder_date'] != null
-            ? DateTime.parse(json['reminder_date'])
+            ? DateTime.tryParse(json['reminder_date'])
             : null,
     priority: json['priority'],
     label: json['label'] != null ? Label.fromJson(json['label']) : null,

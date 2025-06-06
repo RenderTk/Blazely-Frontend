@@ -39,10 +39,10 @@ final lightTheme = ThemeData(
       elevation: 0,
       backgroundColor: Color.fromARGB(255, 28, 210, 216),
       foregroundColor: Colors.white,
-      shape: StadiumBorder(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     ),
   ),
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: Colors.white, // Or a slightly off-white like Color(0xFFF9F9F9)
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(25),
@@ -87,10 +87,10 @@ final darkTheme = ThemeData(
       elevation: 0,
       backgroundColor: Colors.blueAccent,
       foregroundColor: Colors.white,
-      shape: StadiumBorder(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     ),
   ),
-  cardTheme: CardTheme(
+  cardTheme: CardThemeData(
     color: const Color.fromARGB(79, 82, 81, 81),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(25),
