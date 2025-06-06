@@ -103,13 +103,14 @@ class _AddTaskFormState extends ConsumerState<AddTaskForm> {
     required bool pickOnlyDate,
     required bool isReadOnly,
     required bool hideHintOnFocus,
+    required FocusNode? focusNode,
     required TextEditingController controller,
     required Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       readOnly: isReadOnly,
-      focusNode: _focusNode,
+      focusNode: focusNode,
       decoration: InputDecoration(
         suffixIcon:
             showSuffixIcon
@@ -256,6 +257,7 @@ class _AddTaskFormState extends ConsumerState<AddTaskForm> {
                   pickOnlyDate: false,
                   isReadOnly: false,
                   hideHintOnFocus: true,
+                  focusNode: _focusNode,
                   controller: taskNameController,
                   validator: _validateTaskdescription,
                 ),
@@ -277,6 +279,7 @@ class _AddTaskFormState extends ConsumerState<AddTaskForm> {
                   pickOnlyDate: true,
                   isReadOnly: true,
                   hideHintOnFocus: false,
+                  focusNode: null,
                   controller: dueDateController,
                   validator: null,
                 ),
@@ -298,6 +301,7 @@ class _AddTaskFormState extends ConsumerState<AddTaskForm> {
                   pickOnlyDate: false,
                   isReadOnly: true,
                   hideHintOnFocus: false,
+                  focusNode: null,
                   controller: reminderDateController,
                   validator: null,
                 ),
