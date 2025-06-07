@@ -22,7 +22,14 @@ class _EmojiPickerState extends State<EmojiPicker> {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final availableHeight = constraints.maxHeight;
-        double maxHeight = availableHeight <= 150 ? 100 : 250;
+        double maxHeight = 0;
+        if (availableHeight <= 150) {
+          maxHeight = 100;
+        } else if (availableHeight <= 300) {
+          maxHeight = 200;
+        } else {
+          maxHeight = 240;
+        }
 
         return Column(
           mainAxisSize: MainAxisSize.min,
