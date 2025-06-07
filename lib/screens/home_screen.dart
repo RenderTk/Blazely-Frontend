@@ -35,8 +35,8 @@ class HomeScreen extends ConsumerWidget {
               ),
               defaultMsgWhenEmpty: "There are no tasks in this list.",
               showShareTaskButton: true,
-              taskListId: taskList.id ?? -1,
-              groupListId: groupList?.id,
+              taskList: taskList,
+              groupList: groupList,
             ),
       ),
     );

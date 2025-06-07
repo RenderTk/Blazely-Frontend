@@ -1,9 +1,5 @@
-import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
-
-//TODO: remove n fix when ListScreen have constructor that accepts a TaskList instance instead of just a taskListId
-const int placeHolderId = -1;
 
 class TaskListTileGroup extends StatelessWidget {
   const TaskListTileGroup({super.key});
@@ -14,23 +10,24 @@ class TaskListTileGroup extends StatelessWidget {
     String imageAssetPath,
     String defaultMsgWhenEmpty,
   ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => ListScreen(
-              defaultImageWhenEmpty: Image.asset(
-                imageAssetPath,
-                height: 200,
-                width: 200,
-                fit: BoxFit.cover,
-              ),
-              defaultMsgWhenEmpty: defaultMsgWhenEmpty,
-              showShareTaskButton: false,
-              taskListId: placeHolderId,
-            ),
-      ),
-    );
+    //TODO: fix this later to create a dynamic taskList depending of the section users enter
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder:
+    //         (context) => ListScreen(
+    //           defaultImageWhenEmpty: Image.asset(
+    //             imageAssetPath,
+    //             height: 200,
+    //             width: 200,
+    //             fit: BoxFit.cover,
+    //           ),
+    //           defaultMsgWhenEmpty: defaultMsgWhenEmpty,
+    //           showShareTaskButton: false,
+    //           taskList: placeHolderId,
+    //         ),
+    //   ),
+    // );
   }
 
   @override

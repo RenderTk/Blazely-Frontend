@@ -1,4 +1,6 @@
+import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
+import 'package:blazely/models/task_list.dart';
 import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/utils/date_time_parsers.dart';
@@ -7,10 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AddTaskForm extends ConsumerStatefulWidget {
-  const AddTaskForm({super.key, required this.taskListId, this.groupListId});
+  const AddTaskForm({super.key, required this.taskList, this.groupList});
 
-  final int? groupListId;
-  final int taskListId;
+  final GroupList? groupList;
+  final TaskList taskList;
 
   @override
   ConsumerState<AddTaskForm> createState() => _AddTaskFormState();
@@ -86,13 +88,14 @@ class _AddTaskFormState extends ConsumerState<AddTaskForm> {
     );
 
     // it means the task is getting created in a list with no group
-    if (widget.groupListId == null) {
-      await taskListAsyncNotifier.addTask(widget.taskListId, task);
+    if (widget.groupList == null) {
+      await taskListAsyncNotifier.addTask(widget.taskList, task);
       return;
     }
+
     await groupListAsyncNotifier.addTask(
-      widget.groupListId!,
-      widget.taskListId,
+      widget.groupList!,
+      widget.taskList,
       task,
     );
   }

@@ -1,3 +1,4 @@
+import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
 import 'package:blazely/models/task_list.dart';
 import 'package:blazely/providers/group_list_provider.dart';
@@ -16,15 +17,15 @@ class ListScreen extends ConsumerWidget {
     required this.defaultImageWhenEmpty,
     required this.defaultMsgWhenEmpty,
     required this.showShareTaskButton,
-    required this.taskListId,
-    this.groupListId,
+    required this.taskList,
+    this.groupList,
   });
 
   final Image defaultImageWhenEmpty;
   final String defaultMsgWhenEmpty;
   final bool showShareTaskButton;
-  final int taskListId;
-  final int? groupListId;
+  final TaskList taskList;
+  final GroupList? groupList;
 
   List<Task> _getTasksByCompletionStatus(TaskList? taskList, bool isCompleted) {
     return taskList?.tasks
@@ -84,12 +85,12 @@ class ListScreen extends ConsumerWidget {
                       physics: BouncingScrollPhysics(),
                       itemCount: notCompletedTasks.length,
                       itemBuilder: (context, index) {
-                        final taskId = notCompletedTasks[index].id ?? -1;
+                        final task = notCompletedTasks[index];
 
                         return TaskTile(
-                          taskId: taskId,
-                          taskListId: taskListId,
-                          groupListId: groupListId,
+                          task: task,
+                          taskList: this.taskList,
+                          groupList: groupList,
                         );
                       },
                     ),
@@ -109,12 +110,12 @@ class ListScreen extends ConsumerWidget {
                             physics: NeverScrollableScrollPhysics(),
                             itemCount: completedTasks.length,
                             itemBuilder: (context, index) {
-                              final taskId = completedTasks[index].id ?? -1;
+                              final task = completedTasks[index];
 
                               return TaskTile(
-                                taskId: taskId,
-                                taskListId: taskListId,
-                                groupListId: groupListId,
+                                task: task,
+                                taskList: this.taskList,
+                                groupList: groupList,
                               );
                             },
                           ),
@@ -136,8 +137,8 @@ class ListScreen extends ConsumerWidget {
                   ),
                   backgroundColor: Theme.of(context).colorScheme.surface,
                   child: AddTaskForm(
-                    taskListId: taskListId,
-                    groupListId: groupListId,
+                    taskList: this.taskList,
+                    groupList: groupList,
                   ),
                 ),
           );
@@ -183,21 +184,21 @@ class ListScreen extends ConsumerWidget {
         ),
       );
     }
-    if (groupListId != null) {
+    if (groupList != null) {
       var groups = groupListsAsync.valueOrNull;
       final selectedGroup =
-          groups?.where((group) => group.id == groupListId).firstOrNull;
+          groups?.where((group) => group.id == groupList?.id).firstOrNull;
 
       final selectedList =
           selectedGroup?.lists
-              ?.where((list) => list.id == taskListId)
+              ?.where((list) => list.id == taskList.id)
               .firstOrNull;
 
       return taskListScreenBody(context, ref, selectedList);
     } else {
       var lists = taskListsAsync.valueOrNull;
       final selectedList =
-          lists?.where((list) => list.id == taskListId).firstOrNull;
+          lists?.where((list) => list.id == taskList.id).firstOrNull;
 
       return taskListScreenBody(context, ref, selectedList);
     }

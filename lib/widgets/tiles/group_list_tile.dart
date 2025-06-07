@@ -57,7 +57,7 @@ class _GroupListTileState extends ConsumerState<GroupListTile> {
               borderRadius: BorderRadius.circular(25),
             ),
             backgroundColor: Theme.of(context).colorScheme.surface,
-            child: AddOrRemoveListsForm(groupListId: groupList.id ?? -1),
+            child: AddOrRemoveListsForm(groupList: groupList),
           ),
     );
   }
@@ -101,7 +101,10 @@ class _GroupListTileState extends ConsumerState<GroupListTile> {
                   if (widget.groupList == null) return;
                   await groupListAsyncNotifier.unGroupTaskList(
                     widget.groupList!,
-                    widget.groupList!.lists!,
+                    widget.groupList!.lists!.map((l) {
+                      l.group = null;
+                      return l;
+                    }).toList(),
                   );
 
                   ///

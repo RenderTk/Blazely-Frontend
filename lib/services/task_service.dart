@@ -42,28 +42,28 @@ class TaskService {
     DateTime? dueDate,
     DateTime? reminderDate,
     bool isImportant,
-    int? listId,
-    int? groupId,
+    int? tasklistId,
+    int? grouplistId,
     TaskCreationContext context,
   ) async {
     String url = "";
     if (context == TaskCreationContext.list) {
       //
-      if (listId == null) {
+      if (tasklistId == null) {
         throw Exception("Cannot create task in list if listId is null.");
       }
-      url = createInListUrl.replaceAll("<listId>", "$listId");
+      url = createInListUrl.replaceAll("<listId>", "$tasklistId");
     } else if (context == TaskCreationContext.group) {
       //
-      if (listId == null || groupId == null) {
+      if (tasklistId == null || grouplistId == null) {
         throw Exception(
           "Cannot create task in group if listId or groupId is null.",
         );
       }
 
       url = createInGroupUrl
-          .replaceAll("<groupId>", "$groupId")
-          .replaceAll("<listId>", "$listId");
+          .replaceAll("<groupId>", "$grouplistId")
+          .replaceAll("<listId>", "$tasklistId");
     }
 
     final response = await dio.post(

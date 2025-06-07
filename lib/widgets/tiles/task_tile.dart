@@ -1,4 +1,6 @@
+import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
+import 'package:blazely/models/task_list.dart';
 import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/providers/task_provider.dart';
@@ -9,33 +11,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class TaskTile extends ConsumerWidget {
   const TaskTile({
     super.key,
-    required this.taskId,
-    required this.taskListId,
-    this.groupListId,
+    required this.task,
+    required this.taskList,
+    this.groupList,
   });
 
-  final int taskId;
-  final int taskListId;
-  final int? groupListId;
+  final Task task;
+  final TaskList taskList;
+  final GroupList? groupList;
 
   Future toggleIsImportant(WidgetRef ref, bool isImportant) async {
     final taskListAsyncNotifier = ref.watch(taskListAsyncProvider.notifier);
     final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
 
-    if (groupListId != null) {
-      await groupListAsyncNotifier.toggleIsImportantOnTask(
-        groupListId!,
-        taskListId,
-        taskId,
-        isImportant,
+    if (groupList != null) {
+      await groupListAsyncNotifier.updateTask(
+        groupList!,
+        taskList,
+        task.copyWith(isImportant: isImportant),
       );
       return;
     }
 
-    await taskListAsyncNotifier.toggleIsImportantOnTask(
-      taskListId,
-      taskId,
-      isImportant,
+    await taskListAsyncNotifier.updateTask(
+      taskList,
+      task.copyWith(isImportant: isImportant),
     );
   }
 
@@ -43,20 +43,18 @@ class TaskTile extends ConsumerWidget {
     final taskListAsyncNotifier = ref.watch(taskListAsyncProvider.notifier);
     final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
 
-    if (groupListId != null) {
-      await groupListAsyncNotifier.toggleIsCompletedOnTask(
-        groupListId!,
-        taskListId,
-        taskId,
-        isCompleted,
+    if (groupList != null) {
+      await groupListAsyncNotifier.updateTask(
+        groupList!,
+        taskList,
+        task.copyWith(isCompleted: isCompleted),
       );
       return;
     }
 
-    await taskListAsyncNotifier.toggleIsCompletedOnTask(
-      taskListId,
-      taskId,
-      isCompleted,
+    await taskListAsyncNotifier.updateTask(
+      taskList,
+      task.copyWith(isCompleted: isCompleted),
     );
   }
 
@@ -64,11 +62,7 @@ class TaskTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final task = ref.watch(
       taskProvider(
-        TaskContext(
-          taskId: taskId,
-          taskListId: taskListId,
-          groupListId: groupListId,
-        ),
+        TaskContext(task: this.task, taskList: taskList, groupList: groupList),
       ),
     );
 

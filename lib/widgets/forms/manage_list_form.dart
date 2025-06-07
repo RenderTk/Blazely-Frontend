@@ -82,7 +82,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                   ),
                   defaultMsgWhenEmpty: "Press the + button to add tasks.",
                   showShareTaskButton: true,
-                  taskListId: createdTaskList.id ?? -1,
+                  taskList: createdTaskList,
                 ),
           ),
         );

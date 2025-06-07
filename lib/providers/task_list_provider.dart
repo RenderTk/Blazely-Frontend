@@ -7,13 +7,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
-class _AffectedIndexes {
-  final int taskListIndex;
-  final int taskIndex;
-
-  _AffectedIndexes({required this.taskListIndex, required this.taskIndex});
-}
-
 class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
   final logger = Logger();
   final _taskListService = TaskListService();
@@ -37,173 +30,145 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
     }
   }
 
+  //
+  //--------------------------------------------------------- PRIVATE METHODS --------------------------------------------------------- //
+  //
+
   List<TaskList> _createDeepCopyOfState() {
-    final taskListState = [
+    final taskListsState = [
       ...state.value!.map(
         (taskList) => taskList.copyWith(
           tasks: taskList.tasks?.map((task) => task.copyWith()).toList(),
         ),
       ),
     ];
-    return taskListState;
+    return taskListsState;
   }
 
-  Future<void> _updateTask(
-    _AffectedIndexes affectedIndexes,
-    Task updatedTask,
-  ) async {
-    if (state.value?.isEmpty ?? true) return;
-
-    state = await AsyncValue.guard(() async {
-      var taskListState = [...state.value!];
-
-      final taskList = taskListState.elementAtOrNull(
-        affectedIndexes.taskListIndex,
-      );
-      final task = taskList?.tasks?.elementAtOrNull(affectedIndexes.taskIndex);
-
-      if (taskList == null || task == null) {
-        throw Exception("Invalid index while updating task in the task list.");
-      }
-
-      // Update state on server
-      await _taskService.updateTask(dio, task);
-
-      // Update state locally
-      taskListState[affectedIndexes.taskListIndex].tasks?[affectedIndexes
-              .taskIndex] =
-          updatedTask;
-
-      return taskListState;
-    });
-  }
-
-  Task? _getTaskToUpdate(_AffectedIndexes affectedIndexes) {
-    var taskListState = [...state.value ?? []];
-    if (taskListState.isEmpty) return null;
-
-    var taskToUpdate =
-        taskListState[affectedIndexes.taskListIndex].tasks?[affectedIndexes
-            .taskIndex];
-
-    return taskToUpdate;
-  }
-
-  _AffectedIndexes? _getAffectedIndexes(int taskListId, int taskId) {
-    if (state.value?.isEmpty ?? true) return null;
-
-    final affectedTaskListIndex =
-        state.value?.indexWhere((tl) => tl.id == taskListId) ?? -1;
-    if (affectedTaskListIndex == -1) return null;
-
-    final affectedTaskIndex =
-        state.value?[affectedTaskListIndex].tasks!.indexWhere(
-          (t) => t.id == taskId,
-        ) ??
-        -1;
-    if (affectedTaskIndex == -1) return null;
-
-    return _AffectedIndexes(
-      taskListIndex: affectedTaskListIndex,
-      taskIndex: affectedTaskIndex,
+  void _commonTaskListGuardChecks(
+    TaskList taskList,
+    List<TaskList> taskListsState,
+  ) {
+    if (taskList.id == null || taskList.id! <= 0) {
+      throw Exception("The provided tasklist has an invalid id.");
+    }
+    final affectedTaskListIndex = taskListsState.indexWhere(
+      (tl) => tl.id == taskList.id,
     );
+
+    if (affectedTaskListIndex == -1) {
+      throw Exception("Task list not found.");
+    }
   }
+
+  //
+  //--------------------------------------------------------- TASKlIST CRUD METHODS --------------------------------------------------------- //
+  //
 
   Future<TaskList?> addTaskList(String name, String emoji) async {
-    var taskListState = [...state.value!];
-
-    if (name.isEmpty || emoji.isEmpty) return null;
+    var taskListsState = _createDeepCopyOfState();
 
     TaskList? createdTaskList;
     state = await AsyncValue.guard(() async {
+      if (name.isEmpty || emoji.isEmpty) {
+        throw Exception("Name and emoji cannot be empty.");
+      }
       createdTaskList = await _taskListService.createList(dio, name, emoji);
 
       if (createdTaskList == null) {
         throw Exception("Failed to create task list.");
       }
-      taskListState.add(createdTaskList!);
-      return taskListState;
+      taskListsState.add(createdTaskList!);
+      return taskListsState;
     });
-
     return createdTaskList;
   }
 
   Future<void> deleteTaskList(TaskList taskList) async {
-    var taskListState = [...state.value!];
-    if (taskListState.isEmpty) return;
-
-    if (taskList.id == null || taskList.id! <= 0) return;
+    var taskListsState = _createDeepCopyOfState();
 
     state = await AsyncValue.guard(() async {
+      // Guard validations
+      _commonTaskListGuardChecks(taskList, taskListsState);
+
       // Update state on server
       await _taskListService.deleteTaskList(dio, taskList);
 
       // Update state locally
-      taskListState.removeWhere((tl) => tl.id == taskList.id);
+      taskListsState.removeWhere((tl) => tl.id == taskList.id);
 
-      return taskListState;
+      return taskListsState;
     });
   }
 
   Future<void> updateTaskList(TaskList taskList) async {
-    var taskListState = [...state.value!];
-
-    if (taskListState.isEmpty) return;
-
-    if (taskList.id == null || taskList.id! <= 0) return;
+    var taskListsState = _createDeepCopyOfState();
 
     state = await AsyncValue.guard(() async {
+      // Guard validations
+      _commonTaskListGuardChecks(taskList, taskListsState);
+
       // Update state on server
       await _taskListService.updateTaskList(dio, taskList);
 
       // Update state locally
-      taskListState[taskListState.indexWhere((tl) => tl.id == taskList.id)] =
+      taskListsState[taskListsState.indexWhere((tl) => tl.id == taskList.id)] =
           taskList;
 
-      return taskListState;
+      return taskListsState;
     });
   }
 
   Future<void> addTaskListRemovedFromGroup(TaskList taskList) async {
-    var taskListState = [...state.value!];
-
-    if (taskList.id == null || taskList.id! <= 0) return;
+    var taskListsState = _createDeepCopyOfState();
 
     state = await AsyncValue.guard(() async {
-      // Update state locally
-      taskListState.add(taskList);
+      if (taskList.group != null) {
+        throw Exception("The provided tasklist is still part of a group.");
+      }
 
-      return taskListState;
+      if (taskList.id == null || taskList.id! <= 0) {
+        throw Exception("The provided tasklist has an invalid id.");
+      }
+      // Update state locally
+      taskListsState.add(taskList);
+
+      return taskListsState;
     });
   }
 
   Future<void> removeTaskListAddedToGroup(TaskList taskList) async {
-    var taskListState = [...state.value!];
-
-    if (taskListState.isEmpty) return;
-
-    if (taskList.id == null || taskList.id! <= 0) return;
+    var taskListsState = _createDeepCopyOfState();
 
     state = await AsyncValue.guard(() async {
-      // Update state locally
-      taskListState.removeWhere((tl) => tl.id == taskList.id);
+      if (taskList.group == null) {
+        throw Exception("The provided tasklist is not part of a group.");
+      }
 
-      return taskListState;
+      if (taskList.id == null || taskList.id! <= 0) {
+        throw Exception("The provided tasklist has an invalid id.");
+      }
+      // Update state locally
+      taskListsState.removeWhere((tl) => tl.id == taskList.id);
+
+      return taskListsState;
     });
   }
 
-  Future<void> addTask(int taskListId, Task task) async {
+  //
+  //--------------------------------------------------------- TASK CRUD METHODS --------------------------------------------------------- //
+  //
+
+  Future<void> addTask(TaskList taskList, Task task) async {
     final taskListsState = _createDeepCopyOfState();
 
-    final affectedTaskListIndex = taskListsState.indexWhere(
-      (tl) => tl.id == taskListId,
-    );
-    if (affectedTaskListIndex == -1) return;
-
     state = await AsyncValue.guard(() async {
-      // Update state on server
-      final taskList = taskListsState[affectedTaskListIndex];
+      // Guard validations
+      _commonTaskListGuardChecks(taskList, taskListsState);
 
+      final affectedTaskListIndex = taskListsState.indexWhere(
+        (tl) => tl.id == taskList.id,
+      );
       // Create the task on the server
       final createdTask = await _taskService.createTask(
         dio,
@@ -221,38 +186,37 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
     });
   }
 
-  Future<void> toggleIsImportantOnTask(
-    int taskListId,
-    int taskId,
-    bool isImportant,
-  ) async {
-    final affectedIndexes = _getAffectedIndexes(taskListId, taskId);
-    if (affectedIndexes == null) return;
+  Future<void> updateTask(TaskList taskList, Task task) async {
+    final taskListsState = _createDeepCopyOfState();
 
-    var taskToUpdate = _getTaskToUpdate(affectedIndexes);
-    if (taskToUpdate == null) return;
+    state = await AsyncValue.guard(() async {
+      // Guard validations
+      _commonTaskListGuardChecks(taskList, taskListsState);
 
-    taskToUpdate = taskToUpdate.copyWith(isImportant: isImportant);
+      final affectedTaskListIndex = taskListsState.indexWhere(
+        (tl) => tl.id == taskList.id,
+      );
 
-    await _updateTask(affectedIndexes, taskToUpdate);
-  }
+      final affectedTaskIndex = taskListsState[affectedTaskListIndex].tasks!
+          .indexWhere((t) => t.id == task.id);
+      if (affectedTaskIndex == -1) {
+        throw Exception("Task not found.");
+      }
 
-  Future<void> toggleIsCompletedOnTask(
-    int taskListId,
-    int taskId,
-    bool isCompleted,
-  ) async {
-    final affectedIndexes = _getAffectedIndexes(taskListId, taskId);
-    if (affectedIndexes == null) return;
+      //update state on server
+      await _taskService.updateTask(dio, task);
 
-    var taskToUpdate = _getTaskToUpdate(affectedIndexes);
-    if (taskToUpdate == null) return;
+      //update state locally
+      taskListsState[affectedTaskListIndex].tasks![affectedTaskIndex] = task;
 
-    taskToUpdate = taskToUpdate.copyWith(isCompleted: isCompleted);
-
-    await _updateTask(affectedIndexes, taskToUpdate);
+      return taskListsState;
+    });
   }
 }
+
+//
+//--------------------------------------------------------- PROVIDER CLASS --------------------------------------------------------- //
+//
 
 final taskListAsyncProvider =
     AsyncNotifierProvider<TaskListAsyncNotifier, List<TaskList>>(

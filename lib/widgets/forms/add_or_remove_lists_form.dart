@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AddOrRemoveListsForm extends ConsumerStatefulWidget {
-  const AddOrRemoveListsForm({super.key, required this.groupListId});
+  const AddOrRemoveListsForm({super.key, required this.groupList});
 
-  final int groupListId;
+  final GroupList groupList;
 
   @override
   ConsumerState<AddOrRemoveListsForm> createState() =>
@@ -30,16 +30,11 @@ class AddOrRemoveListsFormState extends ConsumerState<AddOrRemoveListsForm> {
     super.initState();
     groupLists = ref.read(groupListAsyncProvider).valueOrNull;
     groupList =
-        groupLists?.where((group) => group.id == widget.groupListId).first ??
+        groupLists?.where((group) => group.id == widget.groupList.id).first ??
         GroupList(id: -1, name: "Grupo desconocido", lists: []);
 
     tasklists = ref.read(taskListAsyncProvider).valueOrNull;
-    tasksListsInGroup =
-        groupList.lists?.map((e) {
-          e.group = groupList.id; // assign group ID to each tasklist
-          return e;
-        }).toList() ??
-        [];
+    tasksListsInGroup = groupList.lists ?? [];
     allTaskLists = [...tasklists!, ...tasksListsInGroup];
     initalStateOfAlltaskLists = allTaskLists.map((e) => e.copyWith()).toList();
   }
