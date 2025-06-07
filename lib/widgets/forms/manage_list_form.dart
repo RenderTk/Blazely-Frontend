@@ -339,8 +339,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                     },
                     // Emoji picker icon //
                     icon:
-                        emojiController.text.isEmpty &&
-                                widget.taskList?.emoji == null
+                        emojiController.text.isEmpty
                             ? const Icon(Icons.emoji_emotions, size: 30)
                             : Text(
                               emojiController.text.isEmpty
@@ -385,10 +384,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
             // show emoji picker when showEmojiPicker is true
             if (_showEmojiPicker) ...[
               SizedBox(height: 20),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 300),
-                child: EmojiPicker(emojiController: emojiController),
-              ),
+              Flexible(child: EmojiPicker(emojiController: emojiController)),
             ],
 
             // If the emoji picker is not shown show the buttons to create the list
