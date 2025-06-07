@@ -221,170 +221,181 @@ class _AddTaskFormState extends ConsumerState<AddTaskForm> {
       }
     });
 
-    return Card(
-      margin: EdgeInsets.zero,
-      color: Theme.of(context).colorScheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        child: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      "Create New Task",
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.close),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 5),
-                Divider(thickness: 0.3, color: Colors.grey.shade400),
-                SizedBox(height: 15),
-                Text(
-                  "Task description",
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                SizedBox(height: 5),
-                _buildTextFormField(
-                  hintText: "Enter a description for this task..",
-                  showSuffixIcon: false,
-                  pickOnlyDate: false,
-                  isReadOnly: false,
-                  hideHintOnFocus: true,
-                  focusNode: _focusNode,
-                  controller: taskNameController,
-                  validator: _validateTaskdescription,
-                ),
-                SizedBox(height: 25),
-                Row(
-                  children: [
-                    Icon(Icons.calendar_today, size: 20),
-                    const SizedBox(width: 5),
-                    Text(
-                      "Due Date",
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ],
-                ),
-                SizedBox(height: 5),
-                _buildTextFormField(
-                  hintText: "Choose due date..",
-                  showSuffixIcon: true,
-                  pickOnlyDate: true,
-                  isReadOnly: true,
-                  hideHintOnFocus: false,
-                  focusNode: null,
-                  controller: dueDateController,
-                  validator: null,
-                ),
-                SizedBox(height: 25),
-                Row(
-                  children: [
-                    Icon(Icons.notifications_outlined, size: 20),
-                    const SizedBox(width: 5),
-                    Text(
-                      "Reminder Date",
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ],
-                ),
-                SizedBox(height: 5),
-                _buildTextFormField(
-                  hintText: "Choose reminder date..",
-                  showSuffixIcon: true,
-                  pickOnlyDate: false,
-                  isReadOnly: true,
-                  hideHintOnFocus: false,
-                  focusNode: null,
-                  controller: reminderDateController,
-                  validator: null,
-                ),
-                SizedBox(height: 25),
-                Row(
-                  children: [
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: BorderSide(color: Colors.grey.shade400, width: 1),
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Card(
+        margin: EdgeInsets.zero,
+        color: Theme.of(context).colorScheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        "Create New Task",
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
-                      margin: EdgeInsets.zero,
-                      color: Theme.of(context).colorScheme.surface,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 15),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  isImportant = !isImportant;
-                                });
-                              },
-                              icon:
-                                  isImportant
-                                      ? Icon(Icons.star, color: Colors.yellow)
-                                      : Icon(Icons.star_border),
-                            ),
-                            Text(
-                              "Mark as Important",
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    Spacer(),
-                    ElevatedButton(onPressed: clearForm, child: Text("Clear")),
-                  ],
-                ),
-                SizedBox(height: 40),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
+                      Spacer(),
+                      IconButton(
                         onPressed: () => Navigator.pop(context),
-                        style: Theme.of(
-                          context,
-                        ).elevatedButtonTheme.style?.copyWith(
-                          backgroundColor: WidgetStatePropertyAll(Colors.red),
-                        ),
-                        child: Text("Cancel"),
+                        icon: Icon(Icons.close),
                       ),
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (formKey.currentState!.validate()) {
-                            await _createTask(
-                              groupListAsyncNotifier,
-                              taskListAsyncNotifier,
-                            );
-                            if (context.mounted) {
-                              Navigator.pop(context);
+                    ],
+                  ),
+                  SizedBox(height: 5),
+                  Divider(thickness: 0.3, color: Colors.grey.shade400),
+                  SizedBox(height: 5),
+                  Text(
+                    "Task description",
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  SizedBox(height: 5),
+                  _buildTextFormField(
+                    hintText: "Enter a description for this task..",
+                    showSuffixIcon: false,
+                    pickOnlyDate: false,
+                    isReadOnly: false,
+                    hideHintOnFocus: true,
+                    focusNode: _focusNode,
+                    controller: taskNameController,
+                    validator: _validateTaskdescription,
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today, size: 20),
+                      const SizedBox(width: 5),
+                      Text(
+                        "Due Date",
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  _buildTextFormField(
+                    hintText: "Choose due date..",
+                    showSuffixIcon: true,
+                    pickOnlyDate: true,
+                    isReadOnly: true,
+                    hideHintOnFocus: false,
+                    focusNode: null,
+                    controller: dueDateController,
+                    validator: null,
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.notifications_outlined, size: 20),
+                      const SizedBox(width: 5),
+                      Text(
+                        "Reminder Date",
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 5),
+                  _buildTextFormField(
+                    hintText: "Choose reminder date..",
+                    showSuffixIcon: true,
+                    pickOnlyDate: false,
+                    isReadOnly: true,
+                    hideHintOnFocus: false,
+                    focusNode: null,
+                    controller: reminderDateController,
+                    validator: null,
+                  ),
+                  SizedBox(height: 25),
+                  Row(
+                    children: [
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: BorderSide(
+                            color: Colors.grey.shade400,
+                            width: 1,
+                          ),
+                        ),
+                        margin: EdgeInsets.zero,
+                        color: Theme.of(context).colorScheme.surface,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 15),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    isImportant = !isImportant;
+                                  });
+                                },
+                                icon:
+                                    isImportant
+                                        ? Icon(Icons.star, color: Colors.yellow)
+                                        : Icon(Icons.star_border),
+                              ),
+                              Text(
+                                "Mark as Important",
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      Spacer(),
+                      ElevatedButton(
+                        onPressed: clearForm,
+                        child: Text("Clear"),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: Theme.of(
+                            context,
+                          ).elevatedButtonTheme.style?.copyWith(
+                            backgroundColor: WidgetStatePropertyAll(Colors.red),
+                          ),
+                          child: Text("Cancel"),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (formKey.currentState!.validate()) {
+                              await _createTask(
+                                groupListAsyncNotifier,
+                                taskListAsyncNotifier,
+                              );
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
                             }
-                          }
-                        },
-                        style: Theme.of(
-                          context,
-                        ).elevatedButtonTheme.style?.copyWith(
-                          backgroundColor: WidgetStatePropertyAll(Colors.green),
+                          },
+                          style: Theme.of(
+                            context,
+                          ).elevatedButtonTheme.style?.copyWith(
+                            backgroundColor: WidgetStatePropertyAll(
+                              Colors.green,
+                            ),
+                          ),
+                          child: Text("Create Task"),
                         ),
-                        child: Text("Create Task"),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
