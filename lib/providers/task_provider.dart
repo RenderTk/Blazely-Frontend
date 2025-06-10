@@ -49,3 +49,26 @@ final taskProvider = Provider.family<Task?, TaskContext>((ref, context) {
     return selectedTask;
   }
 });
+
+final taskContextProvider = Provider<Map<int, TaskOnDynamicListContext>>((ref) {
+  final taskListsAsyncProvider = ref.watch(taskListAsyncProvider).valueOrNull;
+  final groupListsAsyncProvider = ref.watch(groupListAsyncProvider).valueOrNull;
+
+  final List<TaskList> combinedTaskLists = [
+    ...taskListsAsyncProvider ?? [],
+    ...groupListsAsyncProvider?.map((e) => e.lists!).expand((e) => e) ?? [],
+  ];
+
+  final contextMap = <int, TaskOnDynamicListContext>{};
+  for (var taskList in combinedTaskLists) {
+    final group =
+        groupListsAsyncProvider
+            ?.where((g) => g.id == taskList.group)
+            .firstOrNull;
+
+    for (Task task in taskList.tasks ?? []) {
+      contextMap[task.id] = TaskOnDynamicListContext(taskList, group);
+    }
+  }
+  return contextMap;
+});

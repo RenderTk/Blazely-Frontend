@@ -1,6 +1,7 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
 import 'package:blazely/models/task_list.dart';
+import 'package:blazely/providers/dynamic_task_list_provider.dart';
 import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
@@ -17,15 +18,17 @@ class ListScreen extends ConsumerWidget {
     required this.defaultImageWhenEmpty,
     required this.defaultMsgWhenEmpty,
     required this.showShareTaskButton,
-    required this.taskList,
+    this.taskList,
     this.groupList,
+    this.dynamicTaskListType,
   });
 
   final Image defaultImageWhenEmpty;
   final String defaultMsgWhenEmpty;
   final bool showShareTaskButton;
-  final TaskList taskList;
+  final TaskList? taskList;
   final GroupList? groupList;
+  final DynamicTaskListType? dynamicTaskListType;
 
   List<Task> _getTasksByCompletionStatus(TaskList? taskList, bool isCompleted) {
     return taskList?.tasks
@@ -87,11 +90,7 @@ class ListScreen extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final task = notCompletedTasks[index];
 
-                        return TaskTile(
-                          task: task,
-                          taskList: this.taskList,
-                          groupList: groupList,
-                        );
+                        return TaskTile(task: task);
                       },
                     ),
                     SizedBox(height: 20),
@@ -112,11 +111,7 @@ class ListScreen extends ConsumerWidget {
                             itemBuilder: (context, index) {
                               final task = completedTasks[index];
 
-                              return TaskTile(
-                                task: task,
-                                taskList: this.taskList,
-                                groupList: groupList,
-                              );
+                              return TaskTile(task: task);
                             },
                           ),
                         ],
@@ -124,26 +119,30 @@ class ListScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder:
-                (context) => Dialog(
-                  insetPadding: const EdgeInsets.all(20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  child: AddTaskForm(
-                    taskList: this.taskList,
-                    groupList: groupList,
-                  ),
-                ),
-          );
-        },
-      ),
+      floatingActionButton:
+          dynamicTaskListType == null
+              ? FloatingActionButton(
+                child: const Icon(Icons.add),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder:
+                        (context) => Dialog(
+                          insetPadding: const EdgeInsets.all(20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          backgroundColor:
+                              Theme.of(context).colorScheme.surface,
+                          child: AddTaskForm(
+                            taskList: this.taskList!,
+                            groupList: groupList,
+                          ),
+                        ),
+                  );
+                },
+              )
+              : null,
     );
   }
 
@@ -163,6 +162,7 @@ class ListScreen extends ConsumerWidget {
         );
       }
     });
+
     //show snackbar error when group list state is on error
     ref.listen(groupListAsyncProvider, (previous, next) {
       if (next is AsyncError && isCurrent) {
@@ -184,6 +184,16 @@ class ListScreen extends ConsumerWidget {
         ),
       );
     }
+
+    // if task is provided in means is a dynamic task list
+    // completed task list, My day task list etc...
+    if (dynamicTaskListType != null) {
+      final dynamicList = ref.watch(
+        dynamicTaskListProvider(dynamicTaskListType!),
+      );
+      return taskListScreenBody(context, ref, dynamicList!);
+    }
+
     if (groupList != null) {
       var groups = groupListsAsync.valueOrNull;
       final selectedGroup =
@@ -191,14 +201,14 @@ class ListScreen extends ConsumerWidget {
 
       final selectedList =
           selectedGroup?.lists
-              ?.where((list) => list.id == taskList.id)
+              ?.where((list) => list.id == taskList?.id)
               .firstOrNull;
 
-      return taskListScreenBody(context, ref, selectedList);
+      return taskListScreenBody(context, ref, selectedList!);
     } else {
       var lists = taskListsAsync.valueOrNull;
       final selectedList =
-          lists?.where((list) => list.id == taskList.id).firstOrNull;
+          lists?.where((list) => list.id == taskList?.id).firstOrNull;
 
       return taskListScreenBody(context, ref, selectedList);
     }

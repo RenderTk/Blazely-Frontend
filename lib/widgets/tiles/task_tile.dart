@@ -1,6 +1,4 @@
-import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
-import 'package:blazely/models/task_list.dart';
 import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
 import 'package:blazely/providers/task_provider.dart';
@@ -9,24 +7,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TaskTile extends ConsumerWidget {
-  const TaskTile({
-    super.key,
-    required this.task,
-    required this.taskList,
-    this.groupList,
-  });
+  const TaskTile({super.key, required this.task});
 
   final Task task;
-  final TaskList taskList;
-  final GroupList? groupList;
 
   Future toggleIsImportant(WidgetRef ref, bool isImportant) async {
+    final taskContext = ref.read(taskContextProvider);
     final taskListAsyncNotifier = ref.watch(taskListAsyncProvider.notifier);
     final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
 
+    final context = taskContext[task.id]!;
+    final groupList = context.groupList;
+    final taskList = context.taskList;
+
     if (groupList != null) {
       await groupListAsyncNotifier.updateTask(
-        groupList!,
+        groupList,
         taskList,
         task.copyWith(isImportant: isImportant),
       );
@@ -40,12 +36,16 @@ class TaskTile extends ConsumerWidget {
   }
 
   Future toggleIsCompleted(WidgetRef ref, bool isCompleted) async {
+    final taskContext = ref.read(taskContextProvider);
     final taskListAsyncNotifier = ref.watch(taskListAsyncProvider.notifier);
     final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
 
+    final context = taskContext[task.id]!;
+    final groupList = context.groupList;
+    final taskList = context.taskList;
     if (groupList != null) {
       await groupListAsyncNotifier.updateTask(
-        groupList!,
+        groupList,
         taskList,
         task.copyWith(isCompleted: isCompleted),
       );
@@ -60,12 +60,6 @@ class TaskTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final task = ref.watch(
-      taskProvider(
-        TaskContext(task: this.task, taskList: taskList, groupList: groupList),
-      ),
-    );
-
     return InkWell(
       borderRadius: BorderRadius.circular(25),
       onTap: () {},
@@ -75,33 +69,33 @@ class TaskTile extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                task?.text ?? "",
+                task.text,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               Row(
                 children: [
-                  if (task?.dueDate != null && task?.reminderDate != null) ...[
+                  if (task.dueDate != null && task.reminderDate != null) ...[
                     Text(
-                      task?.formattedDueDate ?? "",
+                      task.formattedDueDate ?? "",
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                     const SizedBox(width: 5),
                     const Icon(Icons.notifications, size: 15),
                   ],
-                  if (task?.dueDate != null && task?.reminderDate == null) ...[
+                  if (task.dueDate != null && task.reminderDate == null) ...[
                     Text(
-                      task?.formattedDueDate ?? "",
+                      task.formattedDueDate ?? "",
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                     const SizedBox(width: 5),
                   ],
-                  if (task?.reminderDate != null && task?.dueDate == null) ...[
+                  if (task.reminderDate != null && task.dueDate == null) ...[
                     const Icon(Icons.notifications, size: 15),
                     const SizedBox(width: 5),
                     Text(
-                      task?.formattedReminderDate ?? "",
+                      task.formattedReminderDate ?? "",
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ],
@@ -111,7 +105,7 @@ class TaskTile extends ConsumerWidget {
           ),
           leading: IconButton(
             onPressed: () async {
-              final value = task?.isCompleted ?? false;
+              final value = task.isCompleted;
               try {
                 await toggleIsCompleted(ref, !value);
               } catch (e) {
@@ -127,14 +121,14 @@ class TaskTile extends ConsumerWidget {
               }
             },
             icon: Icon(
-              task?.isCompleted ?? false
+              task.isCompleted
                   ? Icons.check_box
                   : Icons.check_box_outline_blank,
             ),
           ),
           trailing: IconButton(
             onPressed: () async {
-              final value = task?.isImportant ?? false;
+              final value = task.isImportant;
               try {
                 await toggleIsImportant(ref, !value);
               } catch (e) {
@@ -153,8 +147,8 @@ class TaskTile extends ConsumerWidget {
                   (child, animation) =>
                       ScaleTransition(scale: animation, child: child),
               child: Icon(
-                (task?.isImportant ?? false) ? Icons.star : Icons.star_border,
-                key: ValueKey(task?.isImportant),
+                (task.isImportant) ? Icons.star : Icons.star_border,
+                key: ValueKey(task.isImportant),
               ),
             ),
           ),

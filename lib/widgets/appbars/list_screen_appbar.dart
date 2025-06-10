@@ -13,40 +13,45 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
 
   final TaskList? taskList;
   final bool showShareTaskButton;
+  Future showManageListDialog(
+    BuildContext context,
+    ManageListFormType type,
+  ) async {
+    var isDeleted = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => Dialog(
+            insetPadding: const EdgeInsets.all(20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            child: ManageListForm(type: type, taskList: taskList),
+          ),
+    );
+
+    if (context.mounted && isDeleted == true) {
+      Navigator.pop(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    void showManageListDialog(BuildContext context, ManageListFormType type) {
-      showDialog(
-        context: context,
-        builder:
-            (context) => Dialog(
-              insetPadding: const EdgeInsets.all(20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              child: ManageListForm(type: type, taskList: taskList),
-            ),
-      );
-    }
-
     return AppBar(
       elevation: 0,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       title: Row(
         children: [
-          if (taskList?.emoji != null) ...[
-            Text(
-              taskList?.emoji ?? '😣',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(width: 10),
-          ],
+          Text(
+            taskList?.emoji ?? '😣',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(width: 10),
+
           Flexible(
             child: Text(
-              taskList?.name ?? "Couldn't load task list",
-              style: Theme.of(context).textTheme.titleLarge,
+              taskList?.name ?? "Error fetching list name",
+              style: Theme.of(context).textTheme.titleMedium,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),
@@ -60,9 +65,9 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
             onPressed: () {},
           ),
         PopupMenuButton(
-          onSelected: (value) {
+          onSelected: (value) async {
             if (value == PopMenuValues.changeName.toString()) {
-              showManageListDialog(context, ManageListFormType.update);
+              await showManageListDialog(context, ManageListFormType.update);
             } else if (value == PopMenuValues.sendCopy.toString()) {
               //TODO: Share copy of list
             } else if (value == PopMenuValues.duplicate.toString()) {
@@ -70,7 +75,7 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
             } else if (value == PopMenuValues.print.toString()) {
               //TODO: Print list
             } else if (value == PopMenuValues.delete.toString()) {
-              showManageListDialog(context, ManageListFormType.delete);
+              await showManageListDialog(context, ManageListFormType.delete);
             }
           },
 
@@ -79,14 +84,17 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
           ),
           position: PopupMenuPosition.under,
           itemBuilder: (context) {
+            if (taskList == null) return [];
             return <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: PopMenuValues.changeName.toString(),
-                child: ListTile(
-                  leading: Icon(Icons.edit_outlined),
-                  title: Text('Change list name'),
+              //not available for dynamic tasklists
+              if (taskList!.id! > 0)
+                PopupMenuItem<String>(
+                  value: PopMenuValues.changeName.toString(),
+                  child: ListTile(
+                    leading: Icon(Icons.edit_outlined),
+                    title: Text('Change list name'),
+                  ),
                 ),
-              ),
               PopupMenuItem<String>(
                 value: PopMenuValues.sendCopy.toString(),
                 child: ListTile(
@@ -94,13 +102,15 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
                   title: Text('Share copy'),
                 ),
               ),
-              PopupMenuItem<String>(
-                value: PopMenuValues.duplicate.toString(),
-                child: ListTile(
-                  leading: Icon(Icons.copy_outlined),
-                  title: Text('Duplicate list'),
+              //not available for dynamic tasklists
+              if (taskList!.id! > 0)
+                PopupMenuItem<String>(
+                  value: PopMenuValues.duplicate.toString(),
+                  child: ListTile(
+                    leading: Icon(Icons.copy_outlined),
+                    title: Text('Duplicate list'),
+                  ),
                 ),
-              ),
               PopupMenuItem<String>(
                 value: PopMenuValues.print.toString(),
                 child: ListTile(
@@ -108,13 +118,15 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
                   title: Text('Print list'),
                 ),
               ),
-              PopupMenuItem<String>(
-                value: PopMenuValues.delete.toString(),
-                child: ListTile(
-                  leading: Icon(Icons.delete_outlined),
-                  title: Text('Delete list'),
+              //not available for dynamic tasklists
+              if (taskList!.id! > 0)
+                PopupMenuItem<String>(
+                  value: PopMenuValues.delete.toString(),
+                  child: ListTile(
+                    leading: Icon(Icons.delete_outlined),
+                    title: Text('Delete list'),
+                  ),
                 ),
-              ),
             ];
           },
         ),

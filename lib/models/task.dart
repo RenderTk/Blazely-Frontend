@@ -1,14 +1,23 @@
+import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/label.dart';
+import 'package:blazely/models/task_list.dart';
 import 'package:intl/intl.dart';
 
 enum TaskBoleanProperty { isCompleted, isImportant }
 
+class TaskOnDynamicListContext {
+  final TaskList taskList;
+  final GroupList? groupList;
+
+  TaskOnDynamicListContext(this.taskList, this.groupList);
+}
+
 class Task {
-  final int? id;
+  final int id;
   String text;
   String? note;
-  bool? isCompleted;
-  bool? isImportant;
+  bool isCompleted;
+  bool isImportant;
   DateTime? dueDate;
   DateTime? reminderDate;
   String priority;
@@ -26,7 +35,13 @@ class Task {
     required this.label,
   });
 
-  Task.empty({this.id = -1, this.priority = '', this.text = ''});
+  Task.empty({
+    this.id = -1,
+    this.priority = '',
+    this.text = '',
+    this.isCompleted = false,
+    this.isImportant = false,
+  });
 
   factory Task.fromJson(Map<String, dynamic> json) => Task(
     id: json['id'],

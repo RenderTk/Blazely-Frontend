@@ -175,7 +175,7 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
         task.text,
         task.dueDate,
         task.reminderDate,
-        task.isImportant ?? false,
+        task.isImportant,
         taskList.id,
         null,
         TaskCreationContext.list,

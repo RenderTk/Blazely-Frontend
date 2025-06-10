@@ -109,7 +109,7 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
     int taskListIndex,
     List<GroupList> groupListState,
   ) {
-    if (task.id == null || task.id! <= 0) {
+    if (task.id <= 0) {
       throw Exception("Invalid task ID.");
     }
 
@@ -319,7 +319,7 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
         task.text,
         task.dueDate,
         task.reminderDate,
-        task.isImportant ?? false,
+        task.isImportant,
         taskList.id,
         groupList.id,
         TaskCreationContext.group,

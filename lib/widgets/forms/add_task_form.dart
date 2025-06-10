@@ -69,21 +69,19 @@ class _AddTaskFormState extends ConsumerState<AddTaskForm> {
     return null;
   }
 
-  void clearForm() {
-    taskNameController.clear();
-    dueDateController.clear();
-    reminderDateController.clear();
-    isImportant = false;
-  }
-
   Future _createTask(
     GroupListAsyncNotifier groupListAsyncNotifier,
     TaskListAsyncNotifier taskListAsyncNotifier,
   ) async {
+    final dueDate = DateTimeFormats.tryParseUserDate(dueDateController.text);
+    final reminderDate = DateTimeFormats.tryParseUserDateTime(
+      reminderDateController.text,
+    );
+
     Task task = Task.empty().copyWith(
-      text: taskNameController.text,
-      dueDate: DateTime.tryParse(dueDateController.text),
-      reminderDate: DateTime.tryParse(reminderDateController.text),
+      text: taskNameController.text.trim(),
+      dueDate: dueDate,
+      reminderDate: reminderDate,
       isImportant: isImportant,
     );
 
@@ -127,8 +125,8 @@ class _AddTaskFormState extends ConsumerState<AddTaskForm> {
 
                     final dateFormat =
                         pickOnlyDate
-                            ? userFriendlyDateFormat
-                            : userFriendlyDateTimeFormat;
+                            ? DateTimeFormats.userDate
+                            : DateTimeFormats.userDateTime;
 
                     controller.text = dateFormat.format(dateTime);
                   },

@@ -114,6 +114,10 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
         emoji: emojiController.text,
       ),
     );
+
+    if (context.mounted) {
+      Navigator.pop<bool>(context, false);
+    }
   }
 
   Future<void> _deleteList(
@@ -131,9 +135,8 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
       await taskListAsyncNotifier.deleteTaskList(widget.taskList!);
       //
     }
-
     if (context.mounted) {
-      Navigator.pop(context);
+      Navigator.pop<bool>(context, true);
     }
   }
 
@@ -279,7 +282,6 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     ref.listen(taskListAsyncProvider, (previous, next) {
-      Navigator.pop(context);
       if (next is AsyncError && isCurrent) {
         SnackbarHelper.showCustomSnackbar(
           context: context,
@@ -292,7 +294,6 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
     });
 
     ref.listen(groupListAsyncProvider, (previous, next) {
-      Navigator.pop(context);
       if (next is AsyncError && isCurrent) {
         SnackbarHelper.showCustomSnackbar(
           context: context,
@@ -323,7 +324,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                   ),
                   const Spacer(),
                   IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => Navigator.pop<bool>(context, false),
                     icon: const Icon(Icons.close),
                   ),
                 ],
@@ -394,7 +395,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop<bool>(context, false),
                       child: Text(
                         'Cancel',
                         style: Theme.of(context).textTheme.titleMedium,

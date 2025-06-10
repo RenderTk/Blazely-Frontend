@@ -13,7 +13,6 @@ class TaskService {
   final logger = Logger();
 
   Future updateTask(Dio dio, Task task) async {
-    if (task.id == null) return;
     try {
       final response = await dio.put(
         updateAndDeleteUrl.replaceAll("<taskId>", "${task.id}"),
@@ -70,10 +69,11 @@ class TaskService {
       url,
       data: {
         "text": text,
-        "due_date": dueDate != null ? dateFormatForApi.format(dueDate) : null,
+        "due_date":
+            dueDate != null ? DateTimeFormats.apiDate.format(dueDate) : null,
         "reminder_date":
             reminderDate != null
-                ? dateTimeFormatForApi.format(reminderDate)
+                ? DateTimeFormats.apiDateTime.format(reminderDate)
                 : null,
         "is_important": isImportant,
       },
@@ -87,7 +87,6 @@ class TaskService {
   }
 
   Future deleteTask(Dio dio, Task task) async {
-    if (task.id == null) return;
     return;
   }
 }

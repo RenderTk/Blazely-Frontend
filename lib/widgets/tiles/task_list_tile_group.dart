@@ -1,7 +1,10 @@
+import 'package:blazely/providers/dynamic_task_list_provider.dart';
+import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TaskListTileGroup extends StatelessWidget {
+class TaskListTileGroup extends ConsumerWidget {
   const TaskListTileGroup({super.key});
 
   void navigateToListScreen(
@@ -9,29 +12,30 @@ class TaskListTileGroup extends StatelessWidget {
     String title,
     String imageAssetPath,
     String defaultMsgWhenEmpty,
+    DynamicTaskListType dynamicTaskListType,
   ) {
     //TODO: fix this later to create a dynamic taskList depending of the section users enter
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder:
-    //         (context) => ListScreen(
-    //           defaultImageWhenEmpty: Image.asset(
-    //             imageAssetPath,
-    //             height: 200,
-    //             width: 200,
-    //             fit: BoxFit.cover,
-    //           ),
-    //           defaultMsgWhenEmpty: defaultMsgWhenEmpty,
-    //           showShareTaskButton: false,
-    //           taskList: placeHolderId,
-    //         ),
-    //   ),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => ListScreen(
+              defaultImageWhenEmpty: Image.asset(
+                imageAssetPath,
+                height: 200,
+                width: 200,
+                fit: BoxFit.cover,
+              ),
+              defaultMsgWhenEmpty: defaultMsgWhenEmpty,
+              showShareTaskButton: false,
+              dynamicTaskListType: dynamicTaskListType,
+            ),
+      ),
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // Define color pairs for light/dark modes
@@ -65,6 +69,7 @@ class TaskListTileGroup extends StatelessWidget {
               "My Day",
               "assets/images/empty_my_day_list.png",
               "Tasks due today will appear here",
+              DynamicTaskListType.myDay,
             );
           },
         ),
@@ -78,6 +83,7 @@ class TaskListTileGroup extends StatelessWidget {
               "Important",
               "assets/images/empty_important_list.png",
               "Tasks marked as important will appear here",
+              DynamicTaskListType.important,
             );
           },
         ),
@@ -91,6 +97,7 @@ class TaskListTileGroup extends StatelessWidget {
               "Planned",
               "assets/images/empty_planned_list.png",
               "Tasks with a due date will appear here",
+              DynamicTaskListType.planned,
             );
           },
         ),
@@ -104,6 +111,7 @@ class TaskListTileGroup extends StatelessWidget {
               "Completed",
               "assets/images/empty_completed_list.png",
               "Completed tasks will appear here",
+              DynamicTaskListType.completed,
             );
           },
         ),
@@ -117,6 +125,7 @@ class TaskListTileGroup extends StatelessWidget {
               "Assigned to Me",
               "assets/images/empty_assigned_list.png",
               "Tasks that are assigned to you will appear here",
+              DynamicTaskListType.assignedToMe,
             );
           },
         ),
@@ -125,12 +134,13 @@ class TaskListTileGroup extends StatelessWidget {
           icon: Icons.emoji_emotions_outlined,
           iconColor: isDarkMode ? habitsColorDark : habitsColorLight,
           onPressed: () {
-            navigateToListScreen(
-              context,
-              "Habits",
-              "assets/images/blazely_logo.png",
-              "Habit tracker coming soon!",
-            );
+            // TODO: implement habits screen
+            // navigateToListScreen(
+            //   context,
+            //   "Habits",
+            //   "assets/images/blazely_logo.png",
+            //   "Habit tracker coming soon!",
+            // );
           },
         ),
       ],
