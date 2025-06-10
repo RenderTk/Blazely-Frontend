@@ -49,7 +49,7 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
     TaskList taskList,
     List<TaskList> taskListsState,
   ) {
-    if (taskList.id == null || taskList.id! <= 0) {
+    if (taskList.id <= 0) {
       throw Exception("The provided tasklist has an invalid id.");
     }
     final affectedTaskListIndex = taskListsState.indexWhere(
@@ -127,7 +127,7 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
         throw Exception("The provided tasklist is still part of a group.");
       }
 
-      if (taskList.id == null || taskList.id! <= 0) {
+      if (taskList.id <= 0) {
         throw Exception("The provided tasklist has an invalid id.");
       }
       // Update state locally
@@ -145,7 +145,7 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
         throw Exception("The provided tasklist is not part of a group.");
       }
 
-      if (taskList.id == null || taskList.id! <= 0) {
+      if (taskList.id <= 0) {
         throw Exception("The provided tasklist has an invalid id.");
       }
       // Update state locally

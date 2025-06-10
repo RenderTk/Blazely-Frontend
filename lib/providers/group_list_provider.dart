@@ -62,7 +62,7 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
     GroupList groupList,
     List<GroupList> groupListState,
   ) {
-    if (groupList.id == null || groupList.id! <= 0) {
+    if (groupList.id <= 0) {
       throw Exception("Invalid group list id.");
     }
 
@@ -78,7 +78,7 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
     if (taskLists.isEmpty) {
       throw Exception("Tasklist list is empty.");
     }
-    if (taskLists.any((tl) => tl.id == null || tl.id! <= 0)) {
+    if (taskLists.any((tl) => tl.id <= 0)) {
       throw Exception("One or more tasklists have an invalid id.");
     }
   }
@@ -87,7 +87,7 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
     TaskList taskList,
     List<GroupList> groupListState,
   ) {
-    if (taskList.id == null || taskList.id! <= 0) {
+    if (taskList.id <= 0) {
       throw Exception("Invalid task list ID.");
     }
     if (taskList.group == null || taskList.group! <= 0) {

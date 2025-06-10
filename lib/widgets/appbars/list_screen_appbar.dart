@@ -87,7 +87,7 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
             if (taskList == null) return [];
             return <PopupMenuEntry<String>>[
               //not available for dynamic tasklists
-              if (taskList!.id! > 0)
+              if (taskList!.id > 0)
                 PopupMenuItem<String>(
                   value: PopMenuValues.changeName.toString(),
                   child: ListTile(
@@ -103,7 +103,7 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
               //not available for dynamic tasklists
-              if (taskList!.id! > 0)
+              if (taskList!.id > 0)
                 PopupMenuItem<String>(
                   value: PopMenuValues.duplicate.toString(),
                   child: ListTile(
@@ -119,7 +119,7 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
               //not available for dynamic tasklists
-              if (taskList!.id! > 0)
+              if (taskList!.id > 0)
                 PopupMenuItem<String>(
                   value: PopMenuValues.delete.toString(),
                   child: ListTile(

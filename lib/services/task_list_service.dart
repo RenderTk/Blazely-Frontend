@@ -49,7 +49,7 @@ class TaskListService {
   }
 
   Future updateTaskList(Dio dio, TaskList taskList) async {
-    if (taskList.id == null) return;
+    if (taskList.id <= 0) return;
     try {
       final response = await dio.put(
         updateAndDeleteUrl.replaceAll("<listId>", "${taskList.id}"),
@@ -65,7 +65,6 @@ class TaskListService {
   }
 
   Future deleteTaskList(Dio dio, TaskList taskList) async {
-    if (taskList.id == null) return;
     try {
       final response = await dio.delete(
         updateAndDeleteUrl.replaceAll("<listId>", "${taskList.id}"),

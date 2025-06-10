@@ -1,30 +1,29 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:blazely/models/user.dart';
 
+part 'profile.g.dart';
+
+@JsonSerializable()
 class Profile {
-  final String? id;
+  final String id;
+
+  @JsonKey(name: 'birth_date')
   DateTime? birthDate;
-  final User? user;
+
+  final User user;
+
+  @JsonKey(name: 'profile_picture_url')
   final String profilePictureUrl;
 
   Profile({
     required this.id,
+    required this.user,
     this.birthDate,
-    this.user,
     required this.profilePictureUrl,
   });
 
-  factory Profile.fromJson(Map<String, dynamic> json) => Profile(
-    id: json['id'],
-    birthDate:
-        json['birth_date'] != null ? DateTime.parse(json['birth_date']) : null,
-    user: json['user'] != null ? User.fromJson(json['user']) : null,
-    profilePictureUrl: json['profile_picture_url'],
-  );
+  factory Profile.fromJson(Map<String, dynamic> json) =>
+      _$ProfileFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'birth_date': birthDate?.toIso8601String(),
-    'user': user?.toJson(),
-    'profile_picture_url': profilePictureUrl,
-  };
+  Map<String, dynamic> toJson() => _$ProfileToJson(this);
 }

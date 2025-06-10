@@ -50,7 +50,7 @@ class GroupListService {
   }
 
   Future<void> updateGroup(Dio dio, GroupList groupList) async {
-    if (groupList.id == null) return;
+    if (groupList.id <= 0) return;
     try {
       final response = await dio.put(
         updateAndDeleteUrl.replaceAll("<groupId>", "${groupList.id}"),
@@ -66,7 +66,6 @@ class GroupListService {
   }
 
   Future<void> deleteGroup(Dio dio, GroupList groupList) async {
-    if (groupList.id == null) return;
     try {
       final response = await dio.delete(
         updateAndDeleteUrl.replaceAll("<groupId>", "${groupList.id}"),
@@ -87,7 +86,7 @@ class GroupListService {
     GroupList groupList,
     List<TaskList> taskLists,
   ) async {
-    if (groupList.id == null || groupList.lists == null) return;
+    if (groupList.lists == null) return;
     try {
       final response = await dio.patch(
         manageListsUrl.replaceAll("<groupId>", "${groupList.id}"),
@@ -114,7 +113,7 @@ class GroupListService {
     GroupList groupList,
     List<TaskList> taskLists,
   ) async {
-    if (groupList.id == null || groupList.lists == null) return;
+    if (groupList.lists == null) return;
     if (taskLists.isEmpty) return;
     try {
       final response = await dio.patch(
@@ -143,9 +142,7 @@ class GroupListService {
     TaskList taskList,
     ManageTaskListOnGroupAction action,
   ) async {
-    if (groupList.id == null ||
-        groupList.lists == null ||
-        taskList.id == null) {
+    if (groupList.lists == null) {
       return;
     }
     try {

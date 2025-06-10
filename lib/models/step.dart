@@ -1,5 +1,5 @@
 class TaskStep {
-  final int? id;
+  final int id;
   String text;
 
   TaskStep({required this.id, required this.text});

@@ -1,7 +1,7 @@
 import 'package:blazely/models/task_list.dart';
 
 class GroupList {
-  final int? id;
+  final int id;
   String name;
   List<TaskList>? lists;
 

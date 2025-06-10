@@ -1,7 +1,7 @@
 import 'package:blazely/models/task.dart';
 
 class TaskList {
-  final int? id;
+  final int id;
   String name;
   String emoji;
   int? group;

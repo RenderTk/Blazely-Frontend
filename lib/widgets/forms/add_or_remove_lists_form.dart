@@ -44,7 +44,7 @@ class AddOrRemoveListsFormState extends ConsumerState<AddOrRemoveListsForm> {
   }
 
   void _sortById(List<TaskList> list) {
-    list.sort((a, b) => a.id!.compareTo(b.id!));
+    list.sort((a, b) => a.id.compareTo(b.id));
   }
 
   bool _hasChanges() {

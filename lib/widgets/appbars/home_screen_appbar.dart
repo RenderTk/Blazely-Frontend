@@ -33,12 +33,12 @@ class HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
               children: [
                 Text(
                   profile != null
-                      ? "${profile.user?.firstName} ${profile.user?.lastName}"
+                      ? "${profile.user.firstName} ${profile.user.lastName}"
                       : "Couldn't load your profile details.",
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 Text(
-                  profile != null ? "${profile.user?.email}" : "",
+                  profile != null ? profile.user.email : "",
                   style: Theme.of(context).textTheme.bodySmall,
                   textAlign: TextAlign.start,
                 ),

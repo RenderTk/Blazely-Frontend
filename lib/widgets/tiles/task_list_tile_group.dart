@@ -14,7 +14,6 @@ class TaskListTileGroup extends ConsumerWidget {
     String defaultMsgWhenEmpty,
     DynamicTaskListType dynamicTaskListType,
   ) {
-    //TODO: fix this later to create a dynamic taskList depending of the section users enter
     Navigator.push(
       context,
       MaterialPageRoute(

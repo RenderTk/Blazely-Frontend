@@ -1,5 +1,5 @@
 class Label {
-  final int? id;
+  final int id;
   String name;
 
   Label({required this.id, required this.name});
