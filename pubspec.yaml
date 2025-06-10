@@ -45,6 +45,7 @@ dependencies:
   intl: ^0.20.2
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0
+  copy_with_extension:
 
 
 dev_dependencies:
@@ -52,6 +53,7 @@ dev_dependencies:
     sdk: flutter
   build_runner: ^2.4.15
   freezed: ^3.0.6
+  copy_with_extension_gen:
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

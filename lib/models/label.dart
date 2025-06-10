@@ -1,11 +1,17 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'label.g.dart';
+
+@JsonSerializable()
+@CopyWith()
 class Label {
   final int id;
-  String name;
+  final String name;
 
   Label({required this.id, required this.name});
 
-  factory Label.fromJson(Map<String, dynamic> json) =>
-      Label(id: json['id'], name: json['name']);
+  factory Label.fromJson(Map<String, dynamic> json) => _$LabelFromJson(json);
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name};
+  Map<String, dynamic> toJson() => _$LabelToJson(this);
 }

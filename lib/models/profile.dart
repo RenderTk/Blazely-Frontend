@@ -1,9 +1,11 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:blazely/models/user.dart';
 
 part 'profile.g.dart';
 
 @JsonSerializable()
+@CopyWith()
 class Profile {
   final String id;
 
