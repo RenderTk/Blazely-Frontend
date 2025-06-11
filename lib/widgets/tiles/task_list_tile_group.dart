@@ -98,6 +98,7 @@ class TaskListTileGroup extends ConsumerWidget {
       children: [
         TaskListTile(
           tasklist: myDayTaskList,
+          isDraggable: false,
           icon: Icon(
             Icons.sunny,
             color: isDarkMode ? myDayColorDark : myDayColorLight,
@@ -114,6 +115,7 @@ class TaskListTileGroup extends ConsumerWidget {
         ),
         TaskListTile(
           tasklist: importantTaskList,
+          isDraggable: false,
           icon: Icon(
             Icons.star_outline,
             color: isDarkMode ? importantColorDark : importantColorLight,
@@ -130,6 +132,7 @@ class TaskListTileGroup extends ConsumerWidget {
         ),
         TaskListTile(
           tasklist: plannedTaskList,
+          isDraggable: false,
           icon: Icon(
             Icons.calendar_month_outlined,
             color: isDarkMode ? plannedColorDark : plannedColorLight,
@@ -146,6 +149,7 @@ class TaskListTileGroup extends ConsumerWidget {
         ),
         TaskListTile(
           tasklist: completedTaskList,
+          isDraggable: false,
           icon: Icon(
             Icons.check_circle_outline,
             color: isDarkMode ? completedColorDark : completedColorLight,
@@ -162,6 +166,7 @@ class TaskListTileGroup extends ConsumerWidget {
         ),
         TaskListTile(
           tasklist: assignedTaskList,
+          isDraggable: false,
           icon: Icon(
             Icons.person_outline,
             color: isDarkMode ? assignedColorDark : assignedColorLight,
@@ -178,6 +183,7 @@ class TaskListTileGroup extends ConsumerWidget {
         ),
         TaskListTile(
           tasklist: habitsTaskList,
+          isDraggable: false,
           icon: Icon(
             Icons.tag_faces_outlined,
             color: isDarkMode ? habitsColorDark : habitsColorLight,

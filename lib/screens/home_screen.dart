@@ -19,7 +19,7 @@ class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
   void navigateToListScreen(
     BuildContext context,
-    TaskList taskList,
+    TaskList createdTasklist,
     GroupList? groupList,
   ) {
     Navigator.push(
@@ -35,7 +35,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               defaultMsgWhenEmpty: "There are no tasks in this list.",
               showShareTaskButton: true,
-              taskList: taskList,
+              taskList: createdTasklist,
               groupList: groupList,
             ),
       ),
@@ -48,7 +48,9 @@ class HomeScreen extends ConsumerWidget {
   ) {
     final taskListsTiles =
         grouplist.lists
-            ?.map((taskList) => TaskListTile(tasklist: taskList))
+            ?.map(
+              (taskList) => TaskListTile(tasklist: taskList, isDraggable: true),
+            )
             .toList();
 
     final groupListExpansionTile = GroupListExpansionTile(
@@ -122,7 +124,7 @@ class HomeScreen extends ConsumerWidget {
       // This is a task item
       final taskIndex = index - groupCount;
       final tasklist = tasklists![taskIndex];
-      return TaskListTile(tasklist: tasklist);
+      return TaskListTile(tasklist: tasklist, isDraggable: true);
     }
   }
 
@@ -226,18 +228,18 @@ class HomeScreen extends ConsumerWidget {
                           )
                           .animate()
                           .fadeIn(
-                            duration: 400.ms,
+                            duration: 300.ms,
                             delay: (index * 100).ms,
                           ) // assuming you have an index
                           .slideX(
                             begin: -0.3,
-                            duration: 500.ms,
+                            duration: 200.ms,
                             delay: (index * 100).ms,
                             curve: Curves.easeOutBack,
                           )
                           .scale(
                             begin: Offset(0.8, 0.8),
-                            duration: 400.ms,
+                            duration: 200.ms,
                             delay: (index * 100).ms,
                           );
                     },
@@ -255,8 +257,8 @@ class HomeScreen extends ConsumerWidget {
         child: Row(
           children: [
             TextButton.icon(
-              onPressed: () {
-                showDialog(
+              onPressed: () async {
+                final createdTasklist = await showDialog(
                   context: context,
                   builder:
                       (context) => Dialog(
@@ -275,6 +277,11 @@ class HomeScreen extends ConsumerWidget {
                           .scale(duration: 250.ms)
                           .fadeIn(duration: 300.ms),
                 );
+
+                if ((createdTasklist != null && createdTasklist is TaskList) &&
+                    context.mounted) {
+                  navigateToListScreen(context, createdTasklist, null);
+                }
               },
               icon: const Icon(Icons.add),
               label: Text(
@@ -306,6 +313,7 @@ class HomeScreen extends ConsumerWidget {
                           .scale(duration: 250.ms)
                           .fadeIn(duration: 300.ms),
                 );
+                Navigator.pop<bool>(context, false);
               },
               icon: const Icon(Icons.add),
               label: Text(

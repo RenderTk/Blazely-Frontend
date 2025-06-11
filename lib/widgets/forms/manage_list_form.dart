@@ -2,7 +2,6 @@ import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task_list.dart';
 import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/providers/task_list_provider.dart';
-import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:blazely/widgets/pickers/emoji_picker.dart';
 import 'package:flutter/material.dart';
@@ -69,23 +68,7 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
         emojiController.text,
       );
       if (context.mounted && createdTaskList != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => ListScreen(
-                  defaultImageWhenEmpty: Image.asset(
-                    "assets/images/empty_tasks_custom_list.png",
-                    height: 200,
-                    width: 200,
-                    fit: BoxFit.cover,
-                  ),
-                  defaultMsgWhenEmpty: "Press the + button to add tasks.",
-                  showShareTaskButton: true,
-                  taskList: createdTaskList,
-                ),
-          ),
-        );
+        Navigator.pop<TaskList>(context, createdTaskList);
       }
     }
   }
