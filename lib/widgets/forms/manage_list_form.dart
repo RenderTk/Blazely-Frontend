@@ -87,16 +87,17 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
           emoji: emojiController.text,
         ),
       );
-      return;
     }
-
-    //if the list has no group it is own by the task list provider
-    await taskListAsyncNotifier.updateTaskList(
-      widget.taskList!.copyWith(
-        name: textController.text,
-        emoji: emojiController.text,
-      ),
-    );
+    else{
+       //if the list has no group it is own by the task list provider
+      await taskListAsyncNotifier.updateTaskList(
+        widget.taskList!.copyWith(
+          name: textController.text,
+          emoji: emojiController.text,
+        ),
+      );
+    }
+   
 
     if (context.mounted) {
       Navigator.pop<bool>(context, false);

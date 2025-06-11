@@ -313,7 +313,6 @@ class HomeScreen extends ConsumerWidget {
                           .scale(duration: 250.ms)
                           .fadeIn(duration: 300.ms),
                 );
-                Navigator.pop<bool>(context, false);
               },
               icon: const Icon(Icons.add),
               label: Text(

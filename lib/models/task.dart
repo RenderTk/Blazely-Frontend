@@ -62,7 +62,7 @@ class Task {
 
   // Custom serialization methods for dates using DateTimeFormats
   static DateTime? _dateFromJson(String? json) {
-    return DateTimeFormats.tryParseApiDate(json);
+    return DateTime.tryParse(json ?? '');
   }
 
   static String? _dateToJson(DateTime? date) {
@@ -70,7 +70,7 @@ class Task {
   }
 
   static DateTime? _reminderDateFromJson(String? json) {
-    return DateTimeFormats.tryParseApiDateTime(json);
+    return DateTime.tryParse(json ?? '');
   }
 
   static String? _reminderDateToJson(DateTime? date) {

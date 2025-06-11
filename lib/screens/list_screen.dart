@@ -204,7 +204,7 @@ class ListScreen extends ConsumerWidget {
               ?.where((list) => list.id == taskList?.id)
               .firstOrNull;
 
-      return taskListScreenBody(context, ref, selectedList!);
+      return taskListScreenBody(context, ref, selectedList);
     } else {
       var lists = taskListsAsync.valueOrNull;
       final selectedList =

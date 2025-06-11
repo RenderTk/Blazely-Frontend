@@ -32,7 +32,7 @@ class TaskListTile extends ConsumerWidget {
     }
 
     return isDraggable
-        ? Draggable<TaskList>(
+        ? LongPressDraggable<TaskList>(
           data: tasklist,
           feedback: Container(
             width: 200,
@@ -149,7 +149,7 @@ class TaskListTile extends ConsumerWidget {
           ),
         )
         : ListTile(
-          visualDensity: VisualDensity.compact,
+          visualDensity: VisualDensity(horizontal: 0, vertical: -3.5),
           contentPadding: EdgeInsets.symmetric(horizontal: 10),
           leading:
               icon ??
