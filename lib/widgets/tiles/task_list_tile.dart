@@ -3,6 +3,7 @@ import 'package:blazely/models/task_list.dart';
 import 'package:blazely/providers/group_list_provider.dart';
 import 'package:blazely/screens/list_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TaskListTile extends ConsumerWidget {
@@ -35,35 +36,79 @@ class TaskListTile extends ConsumerWidget {
         height: 60,
         decoration: BoxDecoration(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Card(
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: const BorderSide(color: Colors.transparent),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  tasklist.emoji,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                SizedBox(width: 10, height: 10),
-                Text(
-                  tasklist.name,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
+        child: Material(
+          elevation: 6,
+          borderRadius: BorderRadius.circular(15),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+                  Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
+                ],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 5.0,
+                vertical: 5.0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    tasklist.emoji,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(fontSize: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      tasklist.name,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.9),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+      ).animate().scale(
+        begin: const Offset(0.8, 0.8),
+        end: const Offset(1.0, 1.0),
+        duration: 250.ms,
+        curve: Curves.easeInOut,
       ),
+      onDraggableCanceled: (velocity, offset) {},
       childWhenDragging: Container(
         decoration: BoxDecoration(
           color: Colors.transparent,
@@ -72,18 +117,19 @@ class TaskListTile extends ConsumerWidget {
       ),
       child: SizedBox(
         child: ListTile(
-          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+          visualDensity: VisualDensity.compact,
+          contentPadding: EdgeInsets.symmetric(horizontal: 10),
           leading:
               icon ??
               Text(
                 tasklist.emoji,
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
           title: Text(
             tasklist.name,
             style: Theme.of(
               context,
-            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           onTap:
               onPressed ??

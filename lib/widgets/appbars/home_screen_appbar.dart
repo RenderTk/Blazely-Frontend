@@ -1,5 +1,6 @@
 import 'package:blazely/providers/profile_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -15,15 +16,24 @@ class HomeScreenAppBar extends ConsumerWidget implements PreferredSizeWidget {
             leading: Padding(
               padding: const EdgeInsets.only(left: 10),
               child: CircleAvatar(
-                radius: 25,
-                backgroundColor: Colors.white,
-                child: ClipOval(
-                  child:
-                      profile != null
-                          ? Image.network(profile.profilePictureUrl)
-                          : Image.asset("assets/images/no_profile_picture.png"),
-                ),
-              ),
+                    radius: 25,
+                    backgroundColor: Colors.white,
+                    child: ClipOval(
+                      child:
+                          profile != null
+                              ? Image.network(profile.profilePictureUrl)
+                              : Image.asset(
+                                "assets/images/no_profile_picture.png",
+                              ),
+                    ),
+                  )
+                  .animate()
+                  .fadeIn(duration: 400.ms)
+                  .scale(
+                    begin: Offset(0.2, 0.8),
+                    end: Offset(1.0, 1.0),
+                    duration: 400.ms,
+                  ),
             ),
             centerTitle: false,
             title: Column(

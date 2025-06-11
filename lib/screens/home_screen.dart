@@ -11,6 +11,7 @@ import 'package:blazely/widgets/tiles/group_list_expansion_tile.dart';
 import 'package:blazely/widgets/tiles/task_list_tile_group.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
@@ -121,7 +122,14 @@ class HomeScreen extends ConsumerWidget {
       // This is a task item
       final taskIndex = index - groupCount;
       final tasklist = tasklists![taskIndex];
-      return TaskListTile(tasklist: tasklist);
+      return TaskListTile(tasklist: tasklist)
+          .animate()
+          .fadeIn(duration: 300.ms) // uses `Animate.defaultDuration`
+          .scale(
+            alignment: Alignment.center,
+            duration: 300.ms,
+          ) // inherits duration from fadeIn
+          .move(delay: 180.ms, duration: 300.ms);
     }
   }
 
@@ -211,20 +219,23 @@ class HomeScreen extends ConsumerWidget {
                 },
                 builder: (context, candidateData, rejectedData) {
                   return ListView.builder(
-                    itemCount: _getTotalItemCount(
-                      groupListAsync.value,
-                      taskListAsync.value,
-                    ),
-                    itemBuilder: (context, index) {
-                      return _buildUnifiedTaskListTiles(
-                        index,
-                        context,
-                        groupListAsyncNotifier,
-                        groupListAsync.value,
-                        taskListAsync.value,
-                      );
-                    },
-                  );
+                        itemCount: _getTotalItemCount(
+                          groupListAsync.value,
+                          taskListAsync.value,
+                        ),
+                        itemBuilder: (context, index) {
+                          return _buildUnifiedTaskListTiles(
+                            index,
+                            context,
+                            groupListAsyncNotifier,
+                            groupListAsync.value,
+                            taskListAsync.value,
+                          );
+                        },
+                      )
+                      .animate()
+                      .scale(begin: Offset(0.95, 0.95), end: Offset(1, 1))
+                      .fadeIn(duration: 250.ms, delay: (0.8 * 70).ms);
                 },
               ),
             ),
@@ -243,16 +254,20 @@ class HomeScreen extends ConsumerWidget {
                   context: context,
                   builder:
                       (context) => Dialog(
-                        insetPadding: const EdgeInsets.all(20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        child: ManageListForm(
-                          type: ManageListFormType.create,
-                          taskList: null,
-                        ),
-                      ),
+                            insetPadding: const EdgeInsets.all(20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
+                            child: ManageListForm(
+                              type: ManageListFormType.create,
+                              taskList: null,
+                            ),
+                          )
+                          .animate()
+                          .scale(duration: 250.ms)
+                          .fadeIn(duration: 300.ms),
                 );
               },
               icon: const Icon(Icons.add),
@@ -270,16 +285,20 @@ class HomeScreen extends ConsumerWidget {
                   context: context,
                   builder:
                       (context) => Dialog(
-                        insetPadding: const EdgeInsets.all(20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        child: ManageGroupFrom(
-                          type: ManagGroupFormType.create,
-                          groupList: null,
-                        ),
-                      ),
+                            insetPadding: const EdgeInsets.all(20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
+                            child: ManageGroupFrom(
+                              type: ManagGroupFormType.create,
+                              groupList: null,
+                            ),
+                          )
+                          .animate()
+                          .scale(duration: 250.ms)
+                          .fadeIn(duration: 300.ms),
                 );
               },
               icon: const Icon(Icons.add),
