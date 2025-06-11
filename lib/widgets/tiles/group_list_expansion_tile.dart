@@ -26,14 +26,21 @@ class GroupListExpansionTile extends StatefulWidget {
 
 class _GroupListExpansionTileState extends State<GroupListExpansionTile> {
   var expandedTracker = ExpandedTracker(false);
+  final softBlack = Color.fromARGB(255, 24, 24, 24);
 
   @override
   Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(
         splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
         hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        dividerColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
+        expansionTileTheme: const ExpansionTileThemeData(
+          backgroundColor: Colors.transparent,
+          collapsedBackgroundColor: Colors.transparent,
+        ),
       ),
       child: ExpansionTile(
         onExpansionChanged:
@@ -66,6 +73,9 @@ class _GroupListExpansionTileState extends State<GroupListExpansionTile> {
         backgroundColor: Colors.transparent,
         collapsedBackgroundColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
         children: [
           if (expandedTracker.isExpanded && widget.taskListsTiles.isEmpty) ...[
             Center(
@@ -96,14 +106,18 @@ class _GroupListExpansionTileState extends State<GroupListExpansionTile> {
                           .animate()
                           .fadeIn(
                             duration: 300.ms,
-                          ) // uses `Animate.defaultDuration`
+                            delay: (index * 100).ms,
+                          ) // assuming you have an index
+                          .slideX(
+                            begin: 0.3,
+                            duration: 500.ms,
+                            delay: (index * 100).ms,
+                            curve: Curves.easeOutBack,
+                          )
                           .scale(
-                            alignment: Alignment.center,
-                            duration: 300.ms,
-                          ) // inherits duration from fadeIn
-                          .move(
-                            delay: 180.ms,
-                            duration: 300.ms,
+                            begin: Offset(0.8, 0.8),
+                            duration: 350.ms,
+                            delay: (index * 100).ms,
                           ), // runs after the above w/new duration
                     ),
                   ],

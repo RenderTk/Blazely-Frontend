@@ -122,14 +122,7 @@ class HomeScreen extends ConsumerWidget {
       // This is a task item
       final taskIndex = index - groupCount;
       final tasklist = tasklists![taskIndex];
-      return TaskListTile(tasklist: tasklist)
-          .animate()
-          .fadeIn(duration: 300.ms) // uses `Animate.defaultDuration`
-          .scale(
-            alignment: Alignment.center,
-            duration: 300.ms,
-          ) // inherits duration from fadeIn
-          .move(delay: 180.ms, duration: 300.ms);
+      return TaskListTile(tasklist: tasklist);
     }
   }
 
@@ -219,23 +212,36 @@ class HomeScreen extends ConsumerWidget {
                 },
                 builder: (context, candidateData, rejectedData) {
                   return ListView.builder(
-                        itemCount: _getTotalItemCount(
-                          groupListAsync.value,
-                          taskListAsync.value,
-                        ),
-                        itemBuilder: (context, index) {
-                          return _buildUnifiedTaskListTiles(
+                    itemCount: _getTotalItemCount(
+                      groupListAsync.value,
+                      taskListAsync.value,
+                    ),
+                    itemBuilder: (context, index) {
+                      return _buildUnifiedTaskListTiles(
                             index,
                             context,
                             groupListAsyncNotifier,
                             groupListAsync.value,
                             taskListAsync.value,
+                          )
+                          .animate()
+                          .fadeIn(
+                            duration: 400.ms,
+                            delay: (index * 100).ms,
+                          ) // assuming you have an index
+                          .slideX(
+                            begin: -0.3,
+                            duration: 500.ms,
+                            delay: (index * 100).ms,
+                            curve: Curves.easeOutBack,
+                          )
+                          .scale(
+                            begin: Offset(0.8, 0.8),
+                            duration: 400.ms,
+                            delay: (index * 100).ms,
                           );
-                        },
-                      )
-                      .animate()
-                      .scale(begin: Offset(0.95, 0.95), end: Offset(1, 1))
-                      .fadeIn(duration: 250.ms, delay: (0.8 * 70).ms);
+                    },
+                  );
                 },
               ),
             ),
