@@ -6,9 +6,8 @@ import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:blazely/widgets/forms/manage_group_form.dart';
 import 'package:blazely/widgets/forms/manage_list_form.dart';
-import 'package:blazely/widgets/tiles/group_list_tile.dart';
 import 'package:blazely/widgets/appbars/home_screen_appbar.dart';
-import 'package:blazely/widgets/animations/blazely_loading_widget.dart';
+import 'package:blazely/widgets/tiles/group_list_expansion_tile.dart';
 import 'package:blazely/widgets/tiles/task_list_tile_group.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';
@@ -42,77 +41,96 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  List<GroupListTile> buildGroupTaskListTiles(
-    List<GroupList>? groupLists,
+  GroupListExpansionTile _buildGroupListExpansionTile(
+    GroupList grouplist,
     BuildContext context,
   ) {
-    if (groupLists == null) {
-      return [];
-    }
-    //Load user groups
-    List<GroupListTile> groupTaskListTiles = [];
-    for (final groupList in groupLists) {
-      var groupTaskListTile = GroupListTile(
-        title: groupList.name,
-        groupList: groupList,
-        taskListsTiles:
-            groupList.lists
-                ?.map(
-                  (taskList) => TaskListTile(
-                    title: taskList.name,
-                    leadingEmoji: taskList.emoji,
-                    onPressed: () {
-                      navigateToListScreen(context, taskList, groupList);
-                    },
-                  ),
-                )
-                .toList() ??
-            [],
-      );
-      groupTaskListTiles.add(groupTaskListTile);
-    }
-    return groupTaskListTiles;
+    final taskListsTiles =
+        grouplist.lists
+            ?.map((taskList) => TaskListTile(tasklist: taskList))
+            .toList();
+
+    final groupListExpansionTile = GroupListExpansionTile(
+      groupList: grouplist,
+      taskListsTiles: taskListsTiles!,
+    );
+
+    return groupListExpansionTile;
   }
 
-  List<TaskListTile> buildTaskListTiles(
-    List<TaskList>? taskLists,
+  DragTarget<TaskList> _buildDragTargetForGroups(
+    GroupList grouplist,
+    GroupListAsyncNotifier groupListAsyncNotifier,
     BuildContext context,
   ) {
-    if (taskLists == null) {
-      return [];
-    }
-    //Load user task lists
-    List<TaskListTile> taskListTiles = [];
-    for (final taskList in taskLists) {
-      var taskListTile = TaskListTile(
-        title: taskList.name,
-        leadingEmoji: taskList.emoji,
-        onPressed: () {
-          navigateToListScreen(context, taskList, null);
-        },
+    final groupListExpansionTile = _buildGroupListExpansionTile(
+      grouplist,
+      context,
+    );
+
+    // this target will only allow to drop tasklists with no group
+    final dragTarget = DragTarget<TaskList>(
+      onWillAcceptWithDetails: (details) {
+        //TODO: add a way to let user directly change group of tasklist
+
+        if (details.data.group != null) {
+          return false;
+        }
+        return true;
+      },
+      onAcceptWithDetails: (details) {
+        groupListAsyncNotifier.groupTaskLists(grouplist, [
+          details.data.copyWith(group: grouplist.id),
+        ]);
+      },
+      builder: (context, candidateData, rejectedData) {
+        return groupListExpansionTile;
+      },
+    );
+
+    return dragTarget;
+  }
+
+  int _getTotalItemCount(
+    List<GroupList>? grouplists,
+    List<TaskList>? tasklists,
+  ) {
+    final groupCount = grouplists?.length ?? 0;
+    final taskCount = tasklists?.length ?? 0;
+    return groupCount + taskCount;
+  }
+
+  Widget _buildUnifiedTaskListTiles(
+    int index,
+    BuildContext context,
+    GroupListAsyncNotifier groupListAsyncNotifier,
+    List<GroupList>? grouplists,
+    List<TaskList>? tasklists,
+  ) {
+    final groupCount = grouplists?.length ?? 0;
+
+    if (index < groupCount) {
+      // This is a group item
+      final groupList = grouplists![index];
+      return _buildDragTargetForGroups(
+        groupList,
+        groupListAsyncNotifier,
+        context,
       );
-      taskListTiles.add(taskListTile);
+    } else {
+      // This is a task item
+      final taskIndex = index - groupCount;
+      final tasklist = tasklists![taskIndex];
+      return TaskListTile(tasklist: tasklist);
     }
-    return taskListTiles;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taskListAsync = ref.watch(taskListAsyncProvider);
     final groupListAsync = ref.watch(groupListAsyncProvider);
+    final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
-
-    // Show loading if any are loading
-    if (taskListAsync.isLoading || groupListAsync.isLoading) {
-      return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: BlazelyLoadingWidget(
-          loadingText: 'Loading...',
-          primaryColor: Theme.of(context).primaryColor,
-          secondaryColor: Theme.of(context).colorScheme.secondary,
-        ),
-      );
-    }
 
     //if error when loading home screen, show snackbar
     ref.listen(taskListAsyncProvider, (previous, next) {
@@ -141,34 +159,77 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: HomeScreenAppBar(),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 10),
-          TaskListTileGroup(),
-          Divider(thickness: 0.3, color: Colors.grey.shade400),
-          Expanded(
-            child: SizedBox(
-              width: double.infinity,
-              height: double.infinity,
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
+      body: Material(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 10),
+            TaskListTileGroup(),
+            Divider(thickness: 0.3, color: Colors.grey.shade400),
 
-                child: Column(
-                  children: [
-                    //Load user groups
-                    ...buildGroupTaskListTiles(groupListAsync.value, context),
+            // this target will only allow to drop tasklists with no group
+            Expanded(
+              child: DragTarget<TaskList>(
+                onWillAcceptWithDetails: (details) {
+                  final incomingTaskList = details.data;
 
-                    //Load user task lists
-                    ...buildTaskListTiles(taskListAsync.value, context),
-                  ],
-                ),
+                  if (incomingTaskList.group == null) {
+                    return false;
+                  }
+                  GroupList? grouplist;
+                  for (final group in groupListAsync.valueOrNull ?? []) {
+                    if (group.lists?.any(
+                          (list) => list.id == incomingTaskList.id,
+                        ) ??
+                        false) {
+                      grouplist = group;
+                      break;
+                    }
+                  }
+                  if (grouplist == null) {
+                    return false;
+                  }
+                  return true;
+                },
+                onAcceptWithDetails: (details) {
+                  final incomingTaskList = details.data;
+                  GroupList? grouplist;
+                  for (final group in groupListAsync.valueOrNull ?? []) {
+                    if (group.lists?.any(
+                          (list) => list.id == incomingTaskList.id,
+                        ) ??
+                        false) {
+                      grouplist = group;
+                      break;
+                    }
+                  }
+                  groupListAsyncNotifier.unGroupTaskList(grouplist!, [
+                    incomingTaskList.copyWith(group: null),
+                  ]);
+                },
+                builder: (context, candidateData, rejectedData) {
+                  return ListView.builder(
+                    itemCount: _getTotalItemCount(
+                      groupListAsync.value,
+                      taskListAsync.value,
+                    ),
+                    itemBuilder: (context, index) {
+                      return _buildUnifiedTaskListTiles(
+                        index,
+                        context,
+                        groupListAsyncNotifier,
+                        groupListAsync.value,
+                        taskListAsync.value,
+                      );
+                    },
+                  );
+                },
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: BottomAppBar(
         height: 50,

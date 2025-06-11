@@ -205,7 +205,11 @@ class GroupListAsyncNotifier extends AsyncNotifier<List<GroupList>> {
       ref.invalidate(taskListAsyncProvider);
 
       final updatedTaskListsInGroup =
-          groupList.lists?.where((li) => !taskLists.contains(li)).toList() ??
+          groupList.lists
+              ?.where(
+                (li) => !taskLists.any((taskList) => taskList.id == li.id),
+              )
+              .toList() ??
           [];
 
       // Update state locally => remove lists from group

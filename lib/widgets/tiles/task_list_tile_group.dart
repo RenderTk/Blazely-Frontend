@@ -1,3 +1,4 @@
+import 'package:blazely/models/task_list.dart';
 import 'package:blazely/providers/dynamic_task_list_provider.dart';
 import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
@@ -56,12 +57,51 @@ class TaskListTileGroup extends ConsumerWidget {
     final habitsColorDark = Colors.deepOrangeAccent.shade100;
     final habitsColorLight = Colors.deepOrangeAccent;
 
+    final myDayTaskList = TaskList(
+      id: -1,
+      name: "My Day",
+      emoji: "☀️",
+      group: null,
+    );
+    final importantTaskList = TaskList(
+      id: -1,
+      name: "Important",
+      emoji: "⭐️",
+      group: null,
+    );
+    final plannedTaskList = TaskList(
+      id: -1,
+      name: "Planned",
+      emoji: "📆",
+      group: null,
+    );
+    final completedTaskList = TaskList(
+      id: -1,
+      name: "Completed",
+      emoji: "✅",
+      group: null,
+    );
+    final assignedTaskList = TaskList(
+      id: -1,
+      name: "Assigned to me",
+      emoji: "👨‍💻",
+      group: null,
+    );
+    final habitsTaskList = TaskList(
+      id: -1,
+      name: "Habits",
+      emoji: "🧘‍♂️",
+      group: null,
+    );
+
     return Column(
       children: [
-        TaskListTile.icon(
-          title: "My Day",
-          icon: Icons.sunny,
-          iconColor: isDarkMode ? myDayColorDark : myDayColorLight,
+        TaskListTile(
+          tasklist: myDayTaskList,
+          icon: Icon(
+            Icons.sunny,
+            color: isDarkMode ? myDayColorDark : myDayColorLight,
+          ),
           onPressed: () {
             navigateToListScreen(
               context,
@@ -72,10 +112,12 @@ class TaskListTileGroup extends ConsumerWidget {
             );
           },
         ),
-        TaskListTile.icon(
-          title: "Important",
-          icon: Icons.star_border_outlined,
-          iconColor: isDarkMode ? importantColorDark : importantColorLight,
+        TaskListTile(
+          tasklist: importantTaskList,
+          icon: Icon(
+            Icons.star_outline,
+            color: isDarkMode ? importantColorDark : importantColorLight,
+          ),
           onPressed: () {
             navigateToListScreen(
               context,
@@ -86,10 +128,12 @@ class TaskListTileGroup extends ConsumerWidget {
             );
           },
         ),
-        TaskListTile.icon(
-          title: "Planned",
-          icon: Icons.calendar_month_outlined,
-          iconColor: isDarkMode ? plannedColorDark : plannedColorLight,
+        TaskListTile(
+          tasklist: plannedTaskList,
+          icon: Icon(
+            Icons.calendar_month_outlined,
+            color: isDarkMode ? plannedColorDark : plannedColorLight,
+          ),
           onPressed: () {
             navigateToListScreen(
               context,
@@ -100,10 +144,12 @@ class TaskListTileGroup extends ConsumerWidget {
             );
           },
         ),
-        TaskListTile.icon(
-          title: "Completed",
-          icon: Icons.check_circle_outline,
-          iconColor: isDarkMode ? completedColorDark : completedColorLight,
+        TaskListTile(
+          tasklist: completedTaskList,
+          icon: Icon(
+            Icons.check_circle_outline,
+            color: isDarkMode ? completedColorDark : completedColorLight,
+          ),
           onPressed: () {
             navigateToListScreen(
               context,
@@ -114,10 +160,12 @@ class TaskListTileGroup extends ConsumerWidget {
             );
           },
         ),
-        TaskListTile.icon(
-          title: "Assigned to Me",
-          icon: Icons.person_2_outlined,
-          iconColor: isDarkMode ? assignedColorDark : assignedColorLight,
+        TaskListTile(
+          tasklist: assignedTaskList,
+          icon: Icon(
+            Icons.person_outline,
+            color: isDarkMode ? assignedColorDark : assignedColorLight,
+          ),
           onPressed: () {
             navigateToListScreen(
               context,
@@ -128,17 +176,21 @@ class TaskListTileGroup extends ConsumerWidget {
             );
           },
         ),
-        TaskListTile.icon(
-          title: "Habits",
-          icon: Icons.emoji_emotions_outlined,
-          iconColor: isDarkMode ? habitsColorDark : habitsColorLight,
+        TaskListTile(
+          tasklist: habitsTaskList,
+          icon: Icon(
+            Icons.tag_faces_outlined,
+            color: isDarkMode ? habitsColorDark : habitsColorLight,
+          ),
           onPressed: () {
             // TODO: implement habits screen
             // navigateToListScreen(
             //   context,
             //   "Habits",
             //   "assets/images/blazely_logo.png",
-            //   "Habit tracker coming soon!",
+            //   "Habit tracker coming soon!"
+            //   "Tasks that are assigned to you will appear here",
+            //   DynamicTaskListType.habits,
             // );
           },
         ),
