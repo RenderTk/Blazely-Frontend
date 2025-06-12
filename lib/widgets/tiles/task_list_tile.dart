@@ -126,46 +126,50 @@ class TaskListTile extends ConsumerWidget {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          child: SizedBox(
-            child: ListTile(
-              visualDensity: VisualDensity.compact,
-              contentPadding: EdgeInsets.symmetric(horizontal: 10),
-              leading:
-                  icon ??
-                  Text(
-                    tasklist.emoji,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-              title: Text(
-                tasklist.name,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          child: animateTile(
+            SizedBox(
+              child: ListTile(
+                visualDensity: VisualDensity.compact,
+                contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                leading:
+                    icon ??
+                    Text(
+                      tasklist.emoji,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                title: Text(
+                  tasklist.name,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                onTap:
+                    onPressed ??
+                    () => navigateToListScreen(context, tasklist, grouplist),
               ),
-              onTap:
-                  onPressed ??
-                  () => navigateToListScreen(context, tasklist, grouplist),
             ),
           ),
         )
-        : ListTile(
-          visualDensity: VisualDensity(horizontal: 0, vertical: -3.5),
-          contentPadding: EdgeInsets.symmetric(horizontal: 10),
-          leading:
-              icon ??
-              Text(
-                tasklist.emoji,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-          title: Text(
-            tasklist.name,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+        : animateTile(
+          ListTile(
+            visualDensity: VisualDensity(horizontal: 0, vertical: -3.5),
+            contentPadding: EdgeInsets.symmetric(horizontal: 10),
+            leading:
+                icon ??
+                Text(
+                  tasklist.emoji,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+            title: Text(
+              tasklist.name,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            onTap:
+                onPressed ??
+                () => navigateToListScreen(context, tasklist, grouplist),
           ),
-          onTap:
-              onPressed ??
-              () => navigateToListScreen(context, tasklist, grouplist),
         );
   }
 }
@@ -193,4 +197,20 @@ void navigateToListScreen(
           ),
     ),
   );
+}
+
+Widget animateTile(Widget child) {
+  return child
+      .animate()
+      .fadeIn(
+        duration: 250.ms,
+        delay: (1.35 * 100).ms,
+      ) // assuming you have an index
+      .slideX(
+        begin: 0.3,
+        duration: 500.ms,
+        delay: (1.3 * 100).ms,
+        curve: Curves.easeOutBack,
+      )
+      .scale(begin: Offset(0.8, 0.8), duration: 350.ms, delay: (1.3 * 100).ms);
 }

@@ -62,28 +62,29 @@ class HomeScreen extends ConsumerWidget {
   }
 
   DragTarget<TaskList> _buildDragTargetForGroups(
-    GroupList grouplist,
+    GroupListExpansionTile groupListExpansionTile,
+    GroupList? sourceGrouplist,
     GroupListAsyncNotifier groupListAsyncNotifier,
     BuildContext context,
   ) {
-    final groupListExpansionTile = _buildGroupListExpansionTile(
-      grouplist,
-      context,
-    );
-
     // this target will only allow to drop tasklists with no group
     final dragTarget = DragTarget<TaskList>(
       onWillAcceptWithDetails: (details) {
         //TODO: add a way to let user directly change group of tasklist
+        final incomingTaskList = details.data;
 
-        if (details.data.group != null) {
+        if (incomingTaskList.group != null) {
           return false;
         }
         return true;
       },
       onAcceptWithDetails: (details) {
-        groupListAsyncNotifier.groupTaskLists(grouplist, [
-          details.data.copyWith(group: grouplist.id),
+        final incomingTaskList = details.data;
+        if (sourceGrouplist == null) {
+          return;
+        }
+        groupListAsyncNotifier.groupTaskLists(sourceGrouplist, [
+          incomingTaskList.copyWith(group: sourceGrouplist.id),
         ]);
       },
       builder: (context, candidateData, rejectedData) {
@@ -94,38 +95,94 @@ class HomeScreen extends ConsumerWidget {
     return dragTarget;
   }
 
-  int _getTotalItemCount(
-    List<GroupList>? grouplists,
-    List<TaskList>? tasklists,
+  DragTarget<TaskList> _buildDragTargetForTaskList(
+    List<GroupList>? groupLists,
+    GroupListAsyncNotifier groupListAsyncNotifier,
+    BuildContext context,
+    Widget child,
   ) {
-    final groupCount = grouplists?.length ?? 0;
-    final taskCount = tasklists?.length ?? 0;
-    return groupCount + taskCount;
+    return DragTarget<TaskList>(
+      onWillAcceptWithDetails: (details) {
+        final incomingTaskList = details.data;
+
+        // Prevent drop if it doesn't have a group
+        if (incomingTaskList.group == null) {
+          return false;
+        }
+
+        GroupList? sourceGrouplist;
+        for (final group in groupLists ?? []) {
+          if (group.lists?.any((list) => list.id == incomingTaskList.id) ??
+              false) {
+            sourceGrouplist = group;
+            break;
+          }
+        }
+
+        // Prevent drop if it doesn't have a group
+        if (sourceGrouplist == null) {
+          return false;
+        }
+        return true;
+      },
+      onAcceptWithDetails: (details) {
+        final incomingTaskList = details.data;
+        GroupList? sourceGrouplist;
+        for (final group in groupLists ?? []) {
+          if (group.lists?.any((list) => list.id == incomingTaskList.id) ??
+              false) {
+            sourceGrouplist = group;
+            break;
+          }
+        }
+
+        if (sourceGrouplist != null) {
+          groupListAsyncNotifier.unGroupTaskList(sourceGrouplist, [
+            incomingTaskList.copyWith(group: null),
+          ]);
+        }
+      },
+      builder: (context, candidateData, rejectedData) {
+        return child;
+      },
+    );
   }
 
-  Widget _buildUnifiedTaskListTiles(
-    int index,
+  List<Widget> _buildAllTilesAndFiller(
     BuildContext context,
     GroupListAsyncNotifier groupListAsyncNotifier,
     List<GroupList>? grouplists,
+    Map<GroupListExpansionTile, GroupList> groupListExpansionTileToGrouplistMap,
     List<TaskList>? tasklists,
   ) {
-    final groupCount = grouplists?.length ?? 0;
+    List<GroupListExpansionTile> grouplistExpansionTiles = [];
+    List<TaskListTile> taskListTiles = [];
 
-    if (index < groupCount) {
-      // This is a group item
-      final groupList = grouplists![index];
-      return _buildDragTargetForGroups(
-        groupList,
-        groupListAsyncNotifier,
-        context,
-      );
-    } else {
-      // This is a task item
-      final taskIndex = index - groupCount;
-      final tasklist = tasklists![taskIndex];
-      return TaskListTile(tasklist: tasklist, isDraggable: true);
+    if (grouplists != null) {
+      // build task list tiles with groups
+      for (final grouplist in grouplists) {
+        final groupListExpansionTile = _buildGroupListExpansionTile(
+          grouplist,
+          context,
+        );
+
+        groupListExpansionTileToGrouplistMap[groupListExpansionTile] =
+            grouplist;
+        grouplistExpansionTiles.add(groupListExpansionTile);
+      }
     }
+
+    if (tasklists != null) {
+      // build task list tiles without groups
+      for (final tasklist in tasklists) {
+        final tasktile = TaskListTile(tasklist: tasklist, isDraggable: true);
+        taskListTiles.add(tasktile);
+      }
+    }
+
+    final fillerWidget = SizedBox.shrink();
+
+    return [...grouplistExpansionTiles, ...taskListTiles, fillerWidget];
   }
 
   @override
@@ -134,6 +191,16 @@ class HomeScreen extends ConsumerWidget {
     final groupListAsync = ref.watch(groupListAsyncProvider);
     final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
+    final Map<GroupListExpansionTile, GroupList>
+    groupListExpansionTileToGrouplistMap = {};
+
+    final allTiles = _buildAllTilesAndFiller(
+      context,
+      groupListAsyncNotifier,
+      groupListAsync.valueOrNull,
+      groupListExpansionTileToGrouplistMap,
+      taskListAsync.valueOrNull,
+    );
 
     //if error when loading home screen, show snackbar
     ref.listen(taskListAsyncProvider, (previous, next) {
@@ -162,93 +229,106 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: HomeScreenAppBar(),
-      body: Material(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 10),
-            TaskListTileGroup(),
-            Divider(thickness: 0.3, color: Colors.grey.shade400),
-
-            // this target will only allow to drop tasklists with no group
-            Expanded(
-              child: DragTarget<TaskList>(
-                onWillAcceptWithDetails: (details) {
-                  final incomingTaskList = details.data;
-
-                  if (incomingTaskList.group == null) {
-                    return false;
-                  }
-                  GroupList? grouplist;
-                  for (final group in groupListAsync.valueOrNull ?? []) {
-                    if (group.lists?.any(
-                          (list) => list.id == incomingTaskList.id,
-                        ) ??
-                        false) {
-                      grouplist = group;
-                      break;
-                    }
-                  }
-                  if (grouplist == null) {
-                    return false;
-                  }
-                  return true;
-                },
-                onAcceptWithDetails: (details) {
-                  final incomingTaskList = details.data;
-                  GroupList? grouplist;
-                  for (final group in groupListAsync.valueOrNull ?? []) {
-                    if (group.lists?.any(
-                          (list) => list.id == incomingTaskList.id,
-                        ) ??
-                        false) {
-                      grouplist = group;
-                      break;
-                    }
-                  }
-                  groupListAsyncNotifier.unGroupTaskList(grouplist!, [
-                    incomingTaskList.copyWith(group: null),
-                  ]);
-                },
-                builder: (context, candidateData, rejectedData) {
-                  return ListView.builder(
-                    itemCount: _getTotalItemCount(
-                      groupListAsync.value,
-                      taskListAsync.value,
-                    ),
-                    itemBuilder: (context, index) {
-                      return _buildUnifiedTaskListTiles(
-                            index,
-                            context,
-                            groupListAsyncNotifier,
-                            groupListAsync.value,
-                            taskListAsync.value,
-                          )
-                          .animate()
-                          .fadeIn(
-                            duration: 300.ms,
-                            delay: (index * 100).ms,
-                          ) // assuming you have an index
-                          .slideX(
-                            begin: -0.3,
-                            duration: 200.ms,
-                            delay: (index * 100).ms,
-                            curve: Curves.easeOutBack,
-                          )
-                          .scale(
-                            begin: Offset(0.8, 0.8),
-                            duration: 200.ms,
-                            delay: (index * 100).ms,
-                          );
-                    },
-                  );
-                },
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 10),
+          TaskListTileGroup()
+              .animate()
+              .fadeIn(duration: 600.ms, curve: Curves.easeOutQuart)
+              .slideY(
+                begin: -0.3,
+                end: 0,
+                duration: 600.ms,
+                curve: Curves.easeOutBack,
               ),
+          Divider(thickness: 0.3, color: Colors.grey.shade400)
+              .animate()
+              .fadeIn(delay: 200.ms, duration: 400.ms)
+              .scaleX(
+                begin: 0,
+                end: 1,
+                duration: 800.ms,
+                curve: Curves.easeOutExpo,
+              ),
+
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // constraints.maxHeight is the total available height for ListView
+                double availableHeight = constraints.maxHeight;
+
+                return ListView.builder(
+                  physics: BouncingScrollPhysics(),
+                  itemCount: allTiles.length,
+                  itemBuilder: (context, index) {
+                    final tile = allTiles[index];
+
+                    //
+                    // this is the drag target task list tiles with no group
+                    //
+                    if (tile is GroupListExpansionTile) {
+                      GroupList? sourceGrouplist =
+                          groupListExpansionTileToGrouplistMap[tile];
+
+                      return _buildDragTargetForGroups(
+                        tile,
+                        sourceGrouplist,
+                        groupListAsyncNotifier,
+                        context,
+                      );
+                    }
+
+                    //
+                    // this is the drag target for task list tiles with groups
+                    //
+                    if (tile is TaskListTile) {
+                      return _buildDragTargetForTaskList(
+                        groupListAsync.valueOrNull,
+                        groupListAsyncNotifier,
+                        context,
+                        tile,
+                      );
+                    }
+
+                    ///
+                    /// this is the filler widget. Also a drag target for task list tiles with groups
+                    ///
+                    if (tile is SizedBox) {
+                      double estimatedItemHeight =
+                          60.0; // Adjust based on your average item height
+                      int otherItemsCount =
+                          allTiles.where((t) => t is! SizedBox).length;
+                      double usedHeight = otherItemsCount * estimatedItemHeight;
+
+                      // Calculate remaining height
+                      double remainingHeight = availableHeight - usedHeight;
+
+                      // Ensure minimum height and don't exceed available space
+                      double finalHeight = remainingHeight.clamp(
+                        100.0,
+                        availableHeight * 0.8,
+                      );
+                      return SizedBox(
+                        height: finalHeight,
+                        width: double.maxFinite,
+                        child: _buildDragTargetForTaskList(
+                          groupListAsync.valueOrNull,
+                          groupListAsyncNotifier,
+                          context,
+                          tile,
+                        ),
+                      );
+                    }
+                    return null;
+                  },
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomAppBar(
         height: 50,
