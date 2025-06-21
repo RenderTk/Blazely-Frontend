@@ -1,8 +1,8 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
 import 'package:blazely/models/task_list.dart';
-import 'package:blazely/providers/group_list_provider.dart';
-import 'package:blazely/providers/task_list_provider.dart';
+import 'package:blazely/providers/models_providers/group_list_provider.dart';
+import 'package:blazely/providers/models_providers/task_list_provider.dart';
 import 'package:blazely/utils/date_time_parsers.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';

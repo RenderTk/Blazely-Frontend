@@ -1,5 +1,5 @@
 import 'package:blazely/models/profile.dart';
-import 'package:blazely/providers/dio_provider.dart';
+import 'package:blazely/providers/utils_providers/dio_provider.dart';
 import 'package:blazely/services/profile_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

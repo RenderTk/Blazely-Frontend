@@ -1,4 +1,4 @@
-import 'package:blazely/providers/google_auth_provider.dart';
+import 'package:blazely/providers/auth_providers/google_auth_provider.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:blazely/widgets/buttons/google_ripple_button.dart';
 import 'package:flutter/material.dart';

@@ -1,7 +1,7 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task_list.dart';
-import 'package:blazely/providers/group_list_provider.dart';
-import 'package:blazely/providers/task_list_provider.dart';
+import 'package:blazely/providers/models_providers/group_list_provider.dart';
+import 'package:blazely/providers/models_providers/task_list_provider.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:blazely/widgets/pickers/emoji_picker.dart';
 import 'package:flutter/material.dart';
@@ -87,9 +87,8 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
           emoji: emojiController.text,
         ),
       );
-    }
-    else{
-       //if the list has no group it is own by the task list provider
+    } else {
+      //if the list has no group it is own by the task list provider
       await taskListAsyncNotifier.updateTaskList(
         widget.taskList!.copyWith(
           name: textController.text,
@@ -97,7 +96,6 @@ class _ManageListFormState extends ConsumerState<ManageListForm> {
         ),
       );
     }
-   
 
     if (context.mounted) {
       Navigator.pop<bool>(context, false);

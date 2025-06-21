@@ -1,11 +1,9 @@
 import 'package:blazely/models/group_list.dart';
-import 'package:blazely/providers/group_list_provider.dart';
+import 'package:blazely/providers/models_providers/group_list_provider.dart';
 import 'package:blazely/widgets/forms/add_or_remove_lists_form.dart';
 import 'package:blazely/widgets/forms/manage_group_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-
 
 enum PopMenuValues {
   addOrRemoveTaskList,

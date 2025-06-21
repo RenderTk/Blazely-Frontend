@@ -1,6 +1,6 @@
 import 'package:blazely/models/task.dart';
 import 'package:blazely/models/task_list.dart';
-import 'package:blazely/providers/dio_provider.dart';
+import 'package:blazely/providers/utils_providers/dio_provider.dart';
 import 'package:blazely/services/task_list_service.dart';
 import 'package:blazely/services/task_service.dart';
 import 'package:dio/dio.dart';

@@ -1,5 +1,5 @@
-import 'package:blazely/providers/logged_in_provider.dart';
-import 'package:blazely/providers/token_provider.dart';
+import 'package:blazely/providers/auth_providers/logged_in_provider.dart';
+import 'package:blazely/providers/auth_providers/token_provider.dart';
 import 'package:blazely/screens/home_screen.dart';
 import 'package:blazely/screens/log_in_screen.dart';
 import 'package:flutter/material.dart';

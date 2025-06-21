@@ -1,8 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:blazely/models/task.dart';
-import 'package:blazely/providers/group_list_provider.dart';
-import 'package:blazely/providers/task_list_provider.dart';
-import 'package:blazely/providers/task_provider.dart';
+import 'package:blazely/providers/models_providers/group_list_provider.dart';
+import 'package:blazely/providers/models_providers/task_list_provider.dart';
+import 'package:blazely/providers/models_providers/task_provider.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:blazely/models/token.dart';
-import 'package:blazely/providers/token_provider.dart';
+import 'package:blazely/providers/auth_providers/token_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';

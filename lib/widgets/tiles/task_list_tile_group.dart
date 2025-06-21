@@ -1,5 +1,5 @@
 import 'package:blazely/models/task_list.dart';
-import 'package:blazely/providers/dynamic_task_list_provider.dart';
+import 'package:blazely/providers/models_providers/dynamic_task_list_provider.dart';
 import 'package:blazely/screens/list_screen.dart';
 import 'package:blazely/widgets/tiles/task_list_tile.dart';
 import 'package:flutter/material.dart';

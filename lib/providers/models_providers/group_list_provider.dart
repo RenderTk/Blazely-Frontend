@@ -1,8 +1,8 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
 import 'package:blazely/models/task_list.dart';
-import 'package:blazely/providers/dio_provider.dart';
-import 'package:blazely/providers/task_list_provider.dart';
+import 'package:blazely/providers/utils_providers/dio_provider.dart';
+import 'package:blazely/providers/models_providers/task_list_provider.dart';
 import 'package:blazely/services/group_list_service.dart';
 import 'package:blazely/services/task_list_service.dart';
 import 'package:blazely/services/task_service.dart';

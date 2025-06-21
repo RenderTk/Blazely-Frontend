@@ -1,5 +1,5 @@
 import 'package:blazely/models/group_list.dart';
-import 'package:blazely/providers/group_list_provider.dart';
+import 'package:blazely/providers/models_providers/group_list_provider.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,10 +1,10 @@
 import 'package:blazely/models/group_list.dart';
 import 'package:blazely/models/task.dart';
 import 'package:blazely/models/task_list.dart';
-import 'package:blazely/providers/dynamic_task_list_provider.dart';
-import 'package:blazely/providers/group_list_provider.dart';
-import 'package:blazely/providers/logger_provider.dart';
-import 'package:blazely/providers/task_list_provider.dart';
+import 'package:blazely/providers/models_providers/dynamic_task_list_provider.dart';
+import 'package:blazely/providers/models_providers/group_list_provider.dart';
+import 'package:blazely/providers/utils_providers/logger_provider.dart';
+import 'package:blazely/providers/models_providers/task_list_provider.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:blazely/widgets/animations/blazely_loading_widget.dart';
 import 'package:blazely/widgets/appbars/list_screen_appbar.dart';

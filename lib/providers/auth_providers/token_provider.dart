@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:blazely/models/token.dart';
-import 'package:blazely/providers/logged_in_provider.dart';
+import 'package:blazely/providers/auth_providers/logged_in_provider.dart';
 import 'package:blazely/services/token_secure_storage_service.dart';
 import 'package:blazely/services/token_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
