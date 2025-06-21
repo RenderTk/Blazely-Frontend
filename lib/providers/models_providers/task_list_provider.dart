@@ -35,8 +35,9 @@ class TaskListAsyncNotifier extends AsyncNotifier<List<TaskList>> {
   //
 
   List<TaskList> _createDeepCopyOfState() {
+    var currenState = [...state.value!];
     final taskListsState = [
-      ...state.value!.map(
+      ...currenState.map(
         (taskList) => taskList.copyWith(
           tasks: taskList.tasks?.map((task) => task.copyWith()).toList(),
         ),

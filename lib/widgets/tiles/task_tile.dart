@@ -63,15 +63,13 @@ class _TaskTileState extends ConsumerState<TaskTile> {
         taskList,
         widget.task.copyWith(isCompleted: isCompleted),
       );
-      player.play(AssetSource("sounds/task_success.mp3"));
-      return;
+    } else {
+      await taskListAsyncNotifier.updateTask(
+        taskList,
+        widget.task.copyWith(isCompleted: isCompleted),
+      );
     }
-
     player.play(AssetSource("sounds/task_success.mp3"));
-    await taskListAsyncNotifier.updateTask(
-      taskList,
-      widget.task.copyWith(isCompleted: isCompleted),
-    );
   }
 
   @override
