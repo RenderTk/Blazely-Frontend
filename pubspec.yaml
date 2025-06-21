@@ -46,6 +46,7 @@ dependencies:
   json_annotation: ^4.9.0
   copy_with_extension:
   flutter_animate:
+  share_plus:
 
 
 dev_dependencies:

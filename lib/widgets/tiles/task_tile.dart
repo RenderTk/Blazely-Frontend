@@ -60,10 +60,11 @@ class TaskTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(25),
-      onTap: () {},
-      child: Card(
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {},
         child: ListTile(
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

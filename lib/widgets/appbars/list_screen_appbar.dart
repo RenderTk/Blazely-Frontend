@@ -1,6 +1,7 @@
 import 'package:blazely/models/task_list.dart';
 import 'package:blazely/widgets/forms/manage_list_form.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 enum PopMenuValues { changeName, sendCopy, duplicate, print, delete }
 
@@ -19,20 +20,45 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
   ) async {
     var isDeleted = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => Dialog(
-            insetPadding: const EdgeInsets.all(20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(25),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            child: ManageListForm(type: type, taskList: taskList),
-          ),
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        child: ManageListForm(type: type, taskList: taskList),
+      ),
     );
 
     if (context.mounted && isDeleted == true) {
       Navigator.pop(context);
     }
+  }
+
+  String _getListFormattedAsString() {
+    final buffer = StringBuffer();
+    buffer.writeln("${taskList?.emoji} ${taskList?.name}");
+    buffer.writeln();
+
+    if (taskList?.tasks != null) {
+      for (var task in taskList!.tasks!) {
+        if (task.isCompleted) {
+          buffer.write("✅ ");
+        } else {
+          buffer.write("❌ ");
+        }
+        buffer.write(task.text);
+        if (task.isImportant) {
+          buffer.write(" ⭐");
+        }
+        buffer.writeln();
+      }
+    }
+    return buffer.toString();
+  }
+
+  Future shareText() async {
+    await SharePlus.instance.share(
+      ShareParams(text: _getListFormattedAsString()),
+    );
   }
 
   @override
@@ -70,6 +96,7 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
               await showManageListDialog(context, ManageListFormType.update);
             } else if (value == PopMenuValues.sendCopy.toString()) {
               //TODO: Share copy of list
+              await shareText();
             } else if (value == PopMenuValues.duplicate.toString()) {
               //TODO: Duplicate list
             } else if (value == PopMenuValues.print.toString()) {
