@@ -6,21 +6,16 @@ part 'user.g.dart';
 @JsonSerializable()
 @CopyWith()
 class User {
-  final String username;
-  final String email;
-
   @JsonKey(name: 'first_name')
   String firstName;
 
   @JsonKey(name: 'last_name')
   String lastName;
 
-  User({
-    required this.username,
-    required this.email,
-    required this.firstName,
-    required this.lastName,
-  });
+  @JsonKey(name: 'email')
+  String email;
+
+  User({required this.email, required this.firstName, required this.lastName});
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 

@@ -7,8 +7,6 @@ part of 'user.dart';
 // **************************************************************************
 
 abstract class _$UserCWProxy {
-  User username(String username);
-
   User email(String email);
 
   User firstName(String firstName);
@@ -21,7 +19,7 @@ abstract class _$UserCWProxy {
   /// ```dart
   /// User(...).copyWith(id: 12, name: "My name")
   /// ````
-  User call({String username, String email, String firstName, String lastName});
+  User call({String email, String firstName, String lastName});
 }
 
 /// Proxy class for `copyWith` functionality. This is a callable class and can be used as follows: `instanceOfUser.copyWith(...)`. Additionally contains functions for specific fields e.g. `instanceOfUser.copyWith.fieldName(...)`
@@ -29,9 +27,6 @@ class _$UserCWProxyImpl implements _$UserCWProxy {
   const _$UserCWProxyImpl(this._value);
 
   final User _value;
-
-  @override
-  User username(String username) => this(username: username);
 
   @override
   User email(String email) => this(email: email);
@@ -50,17 +45,11 @@ class _$UserCWProxyImpl implements _$UserCWProxy {
   /// User(...).copyWith(id: 12, name: "My name")
   /// ````
   User call({
-    Object? username = const $CopyWithPlaceholder(),
     Object? email = const $CopyWithPlaceholder(),
     Object? firstName = const $CopyWithPlaceholder(),
     Object? lastName = const $CopyWithPlaceholder(),
   }) {
     return User(
-      username:
-          username == const $CopyWithPlaceholder()
-              ? _value.username
-              // ignore: cast_nullable_to_non_nullable
-              : username as String,
       email:
           email == const $CopyWithPlaceholder()
               ? _value.email
@@ -91,15 +80,13 @@ extension $UserCopyWith on User {
 // **************************************************************************
 
 User _$UserFromJson(Map<String, dynamic> json) => User(
-  username: json['username'] as String,
   email: json['email'] as String,
   firstName: json['first_name'] as String,
   lastName: json['last_name'] as String,
 );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
-  'username': instance.username,
-  'email': instance.email,
   'first_name': instance.firstName,
   'last_name': instance.lastName,
+  'email': instance.email,
 };
