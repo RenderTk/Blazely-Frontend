@@ -25,19 +25,18 @@ class HomeScreen extends ConsumerWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => ListScreen(
-              defaultImageWhenEmpty: Image.asset(
-                "assets/images/empty_tasks_custom_list.png",
-                height: 200,
-                width: 200,
-                fit: BoxFit.cover,
-              ),
-              defaultMsgWhenEmpty: "There are no tasks in this list.",
-              showShareTaskButton: true,
-              taskList: createdTasklist,
-              groupList: groupList,
-            ),
+        builder: (context) => ListScreen(
+          defaultImageWhenEmpty: Image.asset(
+            "assets/images/empty_tasks_custom_list.png",
+            height: 200,
+            width: 200,
+            fit: BoxFit.cover,
+          ),
+          defaultMsgWhenEmpty: "There are no tasks in this list.",
+          showShareTaskButton: true,
+          taskList: createdTasklist,
+          groupList: groupList,
+        ),
       ),
     );
   }
@@ -46,12 +45,9 @@ class HomeScreen extends ConsumerWidget {
     GroupList grouplist,
     BuildContext context,
   ) {
-    final taskListsTiles =
-        grouplist.lists
-            ?.map(
-              (taskList) => TaskListTile(tasklist: taskList, isDraggable: true),
-            )
-            .toList();
+    final taskListsTiles = grouplist.lists
+        ?.map((taskList) => TaskListTile(tasklist: taskList, isDraggable: true))
+        .toList();
 
     final groupListExpansionTile = GroupListExpansionTile(
       groupList: grouplist,
@@ -299,20 +295,17 @@ class HomeScreen extends ConsumerWidget {
                     if (tile is SizedBox) {
                       double estimatedItemHeight =
                           60.0; // Adjust based on your average item height
-                      int otherItemsCount =
-                          allTiles.where((t) => t is! SizedBox).length;
+                      int otherItemsCount = allTiles
+                          .where((t) => t is! SizedBox)
+                          .length;
                       double usedHeight = otherItemsCount * estimatedItemHeight;
 
                       // Calculate remaining height
-                      double remainingHeight = availableHeight - usedHeight;
+                      double remainingHeight = (availableHeight - usedHeight)
+                          .clamp(0.0, double.infinity);
 
-                      // Ensure minimum height and don't exceed available space
-                      double finalHeight = remainingHeight.clamp(
-                        100.0,
-                        availableHeight * 0.8,
-                      );
                       return SizedBox(
-                        height: finalHeight,
+                        height: remainingHeight,
                         width: double.maxFinite,
                         child: _buildDragTargetForTaskList(
                           groupListAsync.valueOrNull,
@@ -322,7 +315,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       );
                     }
-                    return null;
+                    return SizedBox.shrink();
                   },
                 );
               },
@@ -340,22 +333,17 @@ class HomeScreen extends ConsumerWidget {
               onPressed: () async {
                 final createdTasklist = await showDialog(
                   context: context,
-                  builder:
-                      (context) => Dialog(
-                            insetPadding: const EdgeInsets.all(20),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            backgroundColor:
-                                Theme.of(context).colorScheme.surface,
-                            child: ManageListForm(
-                              type: ManageListFormType.create,
-                              taskList: null,
-                            ),
-                          )
-                          .animate()
-                          .scale(duration: 250.ms)
-                          .fadeIn(duration: 300.ms),
+                  builder: (context) => Dialog(
+                    insetPadding: const EdgeInsets.all(20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    child: ManageListForm(
+                      type: ManageListFormType.create,
+                      taskList: null,
+                    ),
+                  ).animate().scale(duration: 250.ms).fadeIn(duration: 300.ms),
                 );
 
                 if ((createdTasklist != null && createdTasklist is TaskList) &&
@@ -376,22 +364,17 @@ class HomeScreen extends ConsumerWidget {
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder:
-                      (context) => Dialog(
-                            insetPadding: const EdgeInsets.all(20),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            backgroundColor:
-                                Theme.of(context).colorScheme.surface,
-                            child: ManageGroupFrom(
-                              type: ManagGroupFormType.create,
-                              groupList: null,
-                            ),
-                          )
-                          .animate()
-                          .scale(duration: 250.ms)
-                          .fadeIn(duration: 300.ms),
+                  builder: (context) => Dialog(
+                    insetPadding: const EdgeInsets.all(20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    child: ManageGroupFrom(
+                      type: ManagGroupFormType.create,
+                      groupList: null,
+                    ),
+                  ).animate().scale(duration: 250.ms).fadeIn(duration: 300.ms),
                 );
               },
               icon: const Icon(Icons.add),
