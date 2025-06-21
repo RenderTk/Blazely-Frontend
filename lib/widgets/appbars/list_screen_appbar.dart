@@ -20,12 +20,15 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
   ) async {
     var isDeleted = await showDialog<bool>(
       context: context,
-      builder: (context) => Dialog(
-        insetPadding: const EdgeInsets.all(20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        child: ManageListForm(type: type, taskList: taskList),
-      ),
+      builder:
+          (context) => Dialog(
+            insetPadding: const EdgeInsets.all(20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            child: ManageListForm(type: type, taskList: taskList),
+          ),
     );
 
     if (context.mounted && isDeleted == true) {
@@ -95,7 +98,6 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
             if (value == PopMenuValues.changeName.toString()) {
               await showManageListDialog(context, ManageListFormType.update);
             } else if (value == PopMenuValues.sendCopy.toString()) {
-              //TODO: Share copy of list
               await shareText();
             } else if (value == PopMenuValues.duplicate.toString()) {
               //TODO: Duplicate list

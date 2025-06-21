@@ -10,6 +10,7 @@ import 'package:blazely/widgets/appbars/list_screen_appbar.dart';
 import 'package:blazely/widgets/forms/add_task_form.dart';
 import 'package:blazely/widgets/tiles/task_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ListScreen extends ConsumerWidget {
@@ -81,43 +82,62 @@ class ListScreen extends ConsumerWidget {
               : SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: BouncingScrollPhysics(),
-                      itemCount: notCompletedTasks.length,
-                      itemBuilder: (context, index) {
-                        final task = notCompletedTasks[index];
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: BouncingScrollPhysics(),
+                          itemCount: notCompletedTasks.length,
+                          itemBuilder: (context, index) {
+                            final task = notCompletedTasks[index];
 
-                        return TaskTile(task: task);
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    if (completedTasks.isNotEmpty)
-                      ExpansionTile(
-                        tilePadding: EdgeInsets.symmetric(horizontal: 12),
-                        backgroundColor: Colors.transparent,
-                        collapsedBackgroundColor: Colors.transparent,
-                        title: Text(
-                          "Completed ${completedTasks.length}",
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                        children: [
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: completedTasks.length,
-                            itemBuilder: (context, index) {
-                              final task = completedTasks[index];
+                            return TaskTile(task: task)
+                                .animate()
+                                .fadeIn()
+                                .scale(duration: 350.ms)
+                                .slideY();
+                          },
+                        ).animate().fade().scale(begin: Offset(0.8, 0.8)),
+                        SizedBox(height: 20),
+                        if (completedTasks.isNotEmpty)
+                          ExpansionTile(
+                                initiallyExpanded: true,
+                                tilePadding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                backgroundColor: Colors.transparent,
+                                collapsedBackgroundColor: Colors.transparent,
+                                title: Text(
+                                  "Completed ${completedTasks.length}",
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                                children: [
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: completedTasks.length,
+                                    itemBuilder: (context, index) {
+                                      final task = completedTasks[index];
 
-                              return TaskTile(task: task);
-                            },
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
+                                      return TaskTile(task: task)
+                                          .animate()
+                                          .fadeIn()
+                                          .scale(duration: 350.ms)
+                                          .slideY();
+                                    },
+                                  ),
+                                ],
+                              )
+                              .animate()
+                              .fadeIn(duration: 200.ms)
+                              .scale(duration: 350.ms)
+                              .move(duration: 300.ms),
+                      ],
+                    )
+                    .animate()
+                    .fade()
+                    .scale(duration: 450.ms)
+                    .move(duration: 350.ms),
               ),
       floatingActionButton:
           dynamicTaskListType == null
