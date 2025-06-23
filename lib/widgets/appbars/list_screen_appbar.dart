@@ -1,19 +1,42 @@
 import 'package:blazely/models/task_list.dart';
+import 'package:blazely/providers/models_providers/dynamic_task_list_provider.dart';
+import 'package:blazely/providers/ui_providers/selected_tasks_provider.dart';
+import 'package:blazely/providers/ui_providers/task_selection_mode_provider.dart';
 import 'package:blazely/widgets/forms/manage_list_form.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
-enum PopMenuValues { changeName, sendCopy, duplicate, print, delete }
+enum PopMenuValuesOnTaskSelectionIsOff {
+  changeName,
+  sendCopy,
+  duplicate,
+  print,
+  delete,
+}
 
-class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
+enum PopMenuValuesOnTaskSelectionIsOn {
+  selectAll,
+  unselectAll,
+  move,
+  copy,
+  delete,
+}
+
+class ListScreenAppbar extends ConsumerWidget implements PreferredSizeWidget {
   const ListScreenAppbar({
     super.key,
     required this.taskList,
     this.showShareTaskButton = false,
+    this.dynamicTaskListType,
   });
 
   final TaskList? taskList;
   final bool showShareTaskButton;
+  final DynamicTaskListType? dynamicTaskListType;
+
+  bool get isDynamicTaskList => dynamicTaskListType != null;
+
   Future showManageListDialog(
     BuildContext context,
     ManageListFormType type,
@@ -64,8 +87,7 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildAppbarOnTaskSelectionIsOff(BuildContext context) {
     return AppBar(
       elevation: 0,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -95,15 +117,20 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
           ),
         PopupMenuButton(
           onSelected: (value) async {
-            if (value == PopMenuValues.changeName.toString()) {
+            if (value ==
+                PopMenuValuesOnTaskSelectionIsOff.changeName.toString()) {
               await showManageListDialog(context, ManageListFormType.update);
-            } else if (value == PopMenuValues.sendCopy.toString()) {
+            } else if (value ==
+                PopMenuValuesOnTaskSelectionIsOff.sendCopy.toString()) {
               await shareText();
-            } else if (value == PopMenuValues.duplicate.toString()) {
+            } else if (value ==
+                PopMenuValuesOnTaskSelectionIsOff.duplicate.toString()) {
               //TODO: Duplicate list
-            } else if (value == PopMenuValues.print.toString()) {
+            } else if (value ==
+                PopMenuValuesOnTaskSelectionIsOff.print.toString()) {
               //TODO: Print list
-            } else if (value == PopMenuValues.delete.toString()) {
+            } else if (value ==
+                PopMenuValuesOnTaskSelectionIsOff.delete.toString()) {
               await showManageListDialog(context, ManageListFormType.delete);
             }
           },
@@ -116,41 +143,42 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
             if (taskList == null) return [];
             return <PopupMenuEntry<String>>[
               //not available for dynamic tasklists
-              if (taskList!.id > 0)
+              if (!isDynamicTaskList)
                 PopupMenuItem<String>(
-                  value: PopMenuValues.changeName.toString(),
+                  value:
+                      PopMenuValuesOnTaskSelectionIsOff.changeName.toString(),
                   child: ListTile(
                     leading: Icon(Icons.edit_outlined),
                     title: Text('Change list name'),
                   ),
                 ),
               PopupMenuItem<String>(
-                value: PopMenuValues.sendCopy.toString(),
+                value: PopMenuValuesOnTaskSelectionIsOff.sendCopy.toString(),
                 child: ListTile(
                   leading: Icon(Icons.share_outlined),
                   title: Text('Share copy'),
                 ),
               ),
               //not available for dynamic tasklists
-              if (taskList!.id > 0)
+              if (!isDynamicTaskList)
                 PopupMenuItem<String>(
-                  value: PopMenuValues.duplicate.toString(),
+                  value: PopMenuValuesOnTaskSelectionIsOff.duplicate.toString(),
                   child: ListTile(
                     leading: Icon(Icons.copy_outlined),
                     title: Text('Duplicate list'),
                   ),
                 ),
               PopupMenuItem<String>(
-                value: PopMenuValues.print.toString(),
+                value: PopMenuValuesOnTaskSelectionIsOff.print.toString(),
                 child: ListTile(
                   leading: Icon(Icons.print_outlined),
                   title: Text('Print list'),
                 ),
               ),
               //not available for dynamic tasklists
-              if (taskList!.id > 0)
+              if (!isDynamicTaskList)
                 PopupMenuItem<String>(
-                  value: PopMenuValues.delete.toString(),
+                  value: PopMenuValuesOnTaskSelectionIsOff.delete.toString(),
                   child: ListTile(
                     leading: Icon(Icons.delete_outlined),
                     title: Text('Delete list'),
@@ -161,6 +189,101 @@ class ListScreenAppbar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildAppBarOnTaskSelectionIsOn(BuildContext context, WidgetRef ref) {
+    final selectedTasks = ref.watch(selectedTasksProvider);
+    final taskSelectionModeNotifier = ref.watch(
+      taskSelectionModeProvider.notifier,
+    );
+    final selectedTasksNotifier = ref.watch(selectedTasksProvider.notifier);
+
+    bool areAllTasksSelected = selectedTasks.length == taskList?.tasks?.length;
+
+    return AppBar(
+      automaticallyImplyLeading: false,
+      elevation: 0,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      title: Row(
+        children: [
+          IconButton(
+            onPressed: () {
+              selectedTasksNotifier.clear();
+              taskSelectionModeNotifier.disable();
+            },
+            icon: const Icon(Icons.cancel_outlined),
+          ),
+          SizedBox(width: 10),
+          Text("${selectedTasks.length}"),
+        ],
+      ),
+      actions: [
+        if (dynamicTaskListType != DynamicTaskListType.myDay)
+          IconButton(icon: const Icon(Icons.sunny), onPressed: () {}),
+
+        if (dynamicTaskListType != DynamicTaskListType.planned)
+          IconButton(icon: const Icon(Icons.calendar_today), onPressed: () {}),
+
+        PopupMenuButton(
+          itemBuilder: (context) {
+            return [
+              if (areAllTasksSelected)
+                const PopupMenuItem(
+                  value: PopMenuValuesOnTaskSelectionIsOn.unselectAll,
+                  child: ListTile(
+                    leading: Icon(Icons.remove_circle_outlined),
+                    title: Text("Unselect all"),
+                  ),
+                ),
+              if (!areAllTasksSelected)
+                const PopupMenuItem(
+                  value: PopMenuValuesOnTaskSelectionIsOn.selectAll,
+                  child: ListTile(
+                    leading: Icon(Icons.check_circle_outlined),
+                    title: Text("Select all"),
+                  ),
+                ),
+
+              //not available for dynamic tasklists
+              if (!isDynamicTaskList)
+                const PopupMenuItem(
+                  value: PopMenuValuesOnTaskSelectionIsOn.move,
+                  child: ListTile(
+                    leading: Icon(Icons.move_up_outlined),
+                    title: Text("Move"),
+                  ),
+                ),
+
+              //not available for dynamic tasklists
+              if (!isDynamicTaskList)
+                const PopupMenuItem(
+                  value: PopMenuValuesOnTaskSelectionIsOn.copy,
+                  child: ListTile(
+                    leading: Icon(Icons.copy_outlined),
+                    title: Text("Copy"),
+                  ),
+                ),
+              const PopupMenuItem(
+                value: PopMenuValuesOnTaskSelectionIsOn.delete,
+                child: ListTile(
+                  leading: Icon(Icons.delete_outlined),
+                  title: Text("Delete"),
+                ),
+              ),
+            ];
+          },
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final taskTileSelectionModeIsOn = ref.watch(taskSelectionModeProvider);
+
+    return taskTileSelectionModeIsOn
+        ? _buildAppBarOnTaskSelectionIsOn(context, ref)
+        : _buildAppbarOnTaskSelectionIsOff(context);
   }
 
   @override

@@ -1458,6 +1458,7 @@ final Map<EmojiCategory, List<String>> emojiMap = {
     '🧷',
     '🧹',
     '🧺',
+    "🛒",
     '🧻',
     '🪣',
     '🧼',

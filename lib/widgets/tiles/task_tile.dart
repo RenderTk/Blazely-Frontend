@@ -3,30 +3,24 @@ import 'package:blazely/models/task.dart';
 import 'package:blazely/providers/models_providers/group_list_provider.dart';
 import 'package:blazely/providers/models_providers/task_list_provider.dart';
 import 'package:blazely/providers/models_providers/task_provider.dart';
+import 'package:blazely/providers/ui_providers/selected_tasks_provider.dart';
+import 'package:blazely/providers/ui_providers/task_selection_mode_provider.dart';
 import 'package:blazely/utils/snackbar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TaskTile extends ConsumerStatefulWidget {
+class TaskTile extends ConsumerWidget {
   const TaskTile({super.key, required this.task});
 
   final Task task;
-
-  @override
-  ConsumerState<TaskTile> createState() => _TaskTileState();
-}
-
-class _TaskTileState extends ConsumerState<TaskTile> {
-  final player = AudioPlayer();
-  bool selectionMode = false;
 
   Future toggleIsImportant(WidgetRef ref, bool isImportant) async {
     final taskContext = ref.read(taskContextProvider);
     final taskListAsyncNotifier = ref.watch(taskListAsyncProvider.notifier);
     final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
 
-    final context = taskContext[widget.task.id]!;
+    final context = taskContext[task.id]!;
     final groupList = context.groupList;
     final taskList = context.taskList;
 
@@ -34,14 +28,14 @@ class _TaskTileState extends ConsumerState<TaskTile> {
       await groupListAsyncNotifier.updateTask(
         groupList,
         taskList,
-        widget.task.copyWith(isImportant: isImportant),
+        task.copyWith(isImportant: isImportant),
       );
       return;
     }
 
     await taskListAsyncNotifier.updateTask(
       taskList,
-      widget.task.copyWith(isImportant: isImportant),
+      task.copyWith(isImportant: isImportant),
     );
   }
 
@@ -54,72 +48,139 @@ class _TaskTileState extends ConsumerState<TaskTile> {
     final taskListAsyncNotifier = ref.watch(taskListAsyncProvider.notifier);
     final groupListAsyncNotifier = ref.watch(groupListAsyncProvider.notifier);
 
-    final context = taskContext[widget.task.id]!;
+    final context = taskContext[task.id]!;
     final groupList = context.groupList;
     final taskList = context.taskList;
     if (groupList != null) {
       await groupListAsyncNotifier.updateTask(
         groupList,
         taskList,
-        widget.task.copyWith(isCompleted: isCompleted),
+        task.copyWith(isCompleted: isCompleted),
       );
     } else {
       await taskListAsyncNotifier.updateTask(
         taskList,
-        widget.task.copyWith(isCompleted: isCompleted),
+        task.copyWith(isCompleted: isCompleted),
       );
     }
     player.play(AssetSource("sounds/task_success.mp3"));
   }
 
+  Widget _buildLeadingIcon(bool selectionMode, bool isSelected) {
+    if (selectionMode) {
+      return Icon(
+        isSelected ? Icons.circle : Icons.circle_outlined,
+        key: ValueKey(isSelected),
+        color: isSelected ? Colors.green : Colors.grey.shade400,
+      );
+    }
+
+    return Icon(
+      task.isCompleted ? Icons.check_box : Icons.check_box_outline_blank,
+      key: ValueKey(task.isCompleted),
+      color: task.isCompleted ? Colors.green : Colors.grey,
+    );
+  }
+
+  Future<void> _handleCompletionToggle(
+    WidgetRef ref,
+    BuildContext context,
+    AudioPlayer player,
+    Task task,
+    bool taskTileSelectionModeIsOn,
+  ) async {
+    if (taskTileSelectionModeIsOn) {
+      return;
+    }
+
+    try {
+      await toggleIsCompleted(ref, !task.isCompleted, player);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "An error occured when updating the task as completed. Please try again later.",
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleIsImportantToggle(
+    WidgetRef ref,
+    BuildContext context,
+    bool taskTileSelectionModeIsOn,
+  ) async {
+    if (taskTileSelectionModeIsOn) {
+      return;
+    }
+
+    final value = task.isImportant;
+    try {
+      await toggleIsImportant(ref, !value);
+    } catch (e) {
+      if (context.mounted) {
+        SnackbarHelper.showCustomSnackbar(
+          context: context,
+          message:
+              "An error occured when updating the task as important. Please try again later.",
+        );
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final player = AudioPlayer();
+    final taskTileSelectionModeIsOn = ref.watch(taskSelectionModeProvider);
+    final selectedTasksTiles = ref.watch(selectedTasksProvider);
+    final isSelected = selectedTasksTiles.any((t) => t.id == task.id);
+
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side:
+            isSelected
+                ? BorderSide(color: Colors.green, width: 2)
+                : BorderSide(color: Colors.transparent),
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         enableFeedback: false,
-        onTap: () {},
-        onLongPress: () {
-          setState(() {
-            selectionMode = true;
-          });
-        },
         child: ListTile(
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.task.text,
+                task.text,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               Row(
                 children: [
-                  if (widget.task.dueDate != null &&
-                      widget.task.reminderDate != null) ...[
+                  if (task.dueDate != null && task.reminderDate != null) ...[
                     Text(
-                      widget.task.formattedDueDate ?? "",
+                      task.formattedDueDate ?? "",
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                     const SizedBox(width: 5),
                     const Icon(Icons.notifications, size: 15),
                   ],
-                  if (widget.task.dueDate != null &&
-                      widget.task.reminderDate == null) ...[
+                  if (task.dueDate != null && task.reminderDate == null) ...[
                     Text(
-                      widget.task.formattedDueDate ?? "",
+                      task.formattedDueDate ?? "",
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                     const SizedBox(width: 5),
                   ],
-                  if (widget.task.reminderDate != null &&
-                      widget.task.dueDate == null) ...[
+                  if (task.reminderDate != null && task.dueDate == null) ...[
                     const Icon(Icons.notifications, size: 15),
                     const SizedBox(width: 5),
                     Text(
-                      widget.task.formattedReminderDate ?? "",
+                      task.formattedReminderDate ?? "",
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ],
@@ -128,22 +189,14 @@ class _TaskTileState extends ConsumerState<TaskTile> {
             ],
           ),
           leading: IconButton(
-            onPressed: () async {
-              final value = widget.task.isCompleted;
-              try {
-                await toggleIsCompleted(ref, !value, player);
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        "An error occured when updating the task as completed. Please try again later.",
-                      ),
-                    ),
-                  );
-                }
-              }
-            },
+            onPressed:
+                () async => await _handleCompletionToggle(
+                  ref,
+                  context,
+                  player,
+                  task,
+                  taskTileSelectionModeIsOn,
+                ),
             icon: AnimatedSwitcher(
               duration: 300.ms,
               transitionBuilder: (child, animation) {
@@ -157,48 +210,34 @@ class _TaskTileState extends ConsumerState<TaskTile> {
                   ),
                 );
               },
-              child: Icon(
-                    widget.task.isCompleted
-                        ? Icons.check_box
-                        : Icons.check_box_outline_blank,
-                    key: ValueKey(widget.task.isCompleted),
-                    color: widget.task.isCompleted ? Colors.green : Colors.grey,
-                  )
-                  .animate(key: ValueKey(widget.task.isCompleted))
+              child: _buildLeadingIcon(taskTileSelectionModeIsOn, isSelected)
+                  .animate(key: ValueKey(task.isCompleted))
                   .fade(duration: 300.ms)
                   .slide(duration: 300.ms),
             ),
           ),
           trailing: IconButton(
-            onPressed: () async {
-              final value = widget.task.isImportant;
-              try {
-                await toggleIsImportant(ref, !value);
-              } catch (e) {
-                if (context.mounted) {
-                  SnackbarHelper.showCustomSnackbar(
-                    context: context,
-                    message:
-                        "An error occured when updating the task as important. Please try again later.",
-                  );
-                }
-              }
-            },
+            onPressed:
+                () async => await _handleIsImportantToggle(
+                  ref,
+                  context,
+                  taskTileSelectionModeIsOn,
+                ),
             icon: AnimatedSwitcher(
               duration: 300.ms,
               transitionBuilder: (child, animation) {
                 return ScaleTransition(scale: animation, child: child);
               },
               child: Icon(
-                    widget.task.isImportant ? Icons.star : Icons.star_border,
+                    task.isImportant ? Icons.star : Icons.star_border,
                     key: ValueKey(
-                      widget.task.isImportant,
+                      task.isImportant,
                     ), // must change to trigger switch
-                    color: widget.task.isImportant ? Colors.amber : Colors.grey,
+                    color: task.isImportant ? Colors.amber : Colors.grey,
                   )
                   .animate(
                     key: ValueKey(
-                      widget.task.isImportant,
+                      task.isImportant,
                     ), // needed so flutter_animate sees the change
                   )
                   .fadeIn(duration: 150.ms)
