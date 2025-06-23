@@ -211,7 +211,7 @@ class ListScreenAppbar extends ConsumerWidget implements PreferredSizeWidget {
               selectedTasksNotifier.clear();
               taskSelectionModeNotifier.disable();
             },
-            icon: const Icon(Icons.cancel_outlined),
+            icon: const Icon(Icons.close),
           ),
           SizedBox(width: 10),
           Text("${selectedTasks.length}"),
@@ -225,6 +225,32 @@ class ListScreenAppbar extends ConsumerWidget implements PreferredSizeWidget {
           IconButton(icon: const Icon(Icons.calendar_today), onPressed: () {}),
 
         PopupMenuButton(
+          onSelected: (value) {
+            if (value == PopMenuValuesOnTaskSelectionIsOn.selectAll) {
+              if (taskList != null) {
+                taskList?.tasks?.forEach((task) {
+                  selectedTasksNotifier.add(task);
+                });
+              }
+            }
+            if (value == PopMenuValuesOnTaskSelectionIsOn.unselectAll) {
+              if (taskList != null) {
+                taskList?.tasks?.forEach((task) {
+                  selectedTasksNotifier.remove(task);
+                });
+                taskSelectionModeNotifier.disable();
+              }
+            }
+            if (value == PopMenuValuesOnTaskSelectionIsOn.move) {
+              //TODO: Move selected tasks
+            }
+            if (value == PopMenuValuesOnTaskSelectionIsOn.copy) {
+              //TODO: Copy selected tasks
+            }
+            if (value == PopMenuValuesOnTaskSelectionIsOn.delete) {
+              //TODO: Delete selected tasks
+            }
+          },
           itemBuilder: (context) {
             return [
               if (areAllTasksSelected)
@@ -244,25 +270,21 @@ class ListScreenAppbar extends ConsumerWidget implements PreferredSizeWidget {
                   ),
                 ),
 
-              //not available for dynamic tasklists
-              if (!isDynamicTaskList)
-                const PopupMenuItem(
-                  value: PopMenuValuesOnTaskSelectionIsOn.move,
-                  child: ListTile(
-                    leading: Icon(Icons.move_up_outlined),
-                    title: Text("Move"),
-                  ),
+              const PopupMenuItem(
+                value: PopMenuValuesOnTaskSelectionIsOn.move,
+                child: ListTile(
+                  leading: Icon(Icons.move_up_outlined),
+                  title: Text("Move"),
                 ),
+              ),
 
-              //not available for dynamic tasklists
-              if (!isDynamicTaskList)
-                const PopupMenuItem(
-                  value: PopMenuValuesOnTaskSelectionIsOn.copy,
-                  child: ListTile(
-                    leading: Icon(Icons.copy_outlined),
-                    title: Text("Copy"),
-                  ),
+              const PopupMenuItem(
+                value: PopMenuValuesOnTaskSelectionIsOn.copy,
+                child: ListTile(
+                  leading: Icon(Icons.copy_outlined),
+                  title: Text("Copy"),
                 ),
+              ),
               const PopupMenuItem(
                 value: PopMenuValuesOnTaskSelectionIsOn.delete,
                 child: ListTile(
